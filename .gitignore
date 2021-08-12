@@ -1,0 +1,8 @@
+public/
+node_modules/
+.vscode/
+.git/
+.DS_Store
+.idea
+.env
+!src/frontend/public/
