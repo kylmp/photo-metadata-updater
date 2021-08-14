@@ -6,3 +6,5 @@ node_modules/
 .idea
 .env
 !src/frontend/public/
+!src/frontend/.env
+mockup.drawio
