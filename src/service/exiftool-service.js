@@ -1,9 +1,10 @@
 const shell = require('shelljs');
 const asyncShell = require('../utils/async-shell');
+const coordinatesUtils = require('../utils/coordinates-utils');
 
 module.exports = {
 	setGeotag: function(file, lat, lon) {
-		if (typeof lat == 'number' && typeof lon == 'number' && (lat * -1) <= 90 && (lon * -1) <= 180) {
+		if (coordinatesUtils.isValidCoordinates(lat, lon)) {
 			let latRef = (lat < 0) ? 'S' : 'N';
 			let lonRef = (lon < 0) ? 'W' : 'E';
 			let cmd = `exiftool ${file} -gpslatitude=${lat}  -gpslongitude=${lon} -gpslatituderef=${latRef} -gpslongituderef=${lonRef}`;
@@ -14,7 +15,7 @@ module.exports = {
 		return false;
 	},
 
-	getFullData: async function(file) {
+	getMetaData: async function(file) {
 		let infoMap = new Map();
 		let data = await asyncShell.exec(`exiftool "${file}"`).catch(err => {throw err});
 		data.split(/\r?\n/).forEach((item) => {
@@ -30,31 +31,10 @@ module.exports = {
 			'created': infoMap.get('Create Date'),
 			'resolution': infoMap.get('Image Size'),
 			'projection': infoMap.get('Projection Type'),
+			'coordinates': coordinatesUtils.geotagToCoordinates(infoMap.get('GPS Position')),
 		};
-		let gps = infoMap.get('GPS Position');
-		if (gps === undefined || gps === `0 deg 0' 0.00" N, 0 deg 0' 0.00" E`) {
-			res.isGeotagged = false;
-		}
-		else {
-			res.isGeotagged = true;	
-			let geotag = convertGeotag(gps);
-			res.latitude = geotag.latitude;
-			res.longitude = geotag.longitude;
-		}
+		res.isGeotagged = (res.coordinates.latitude === 0 && res.coordinates.longitude === 0) ? false : true;
+		res.isHdr = res.name.includes("HDR");
 		return res;
 	}
-}
-
-function convertGeotag(geotag) {
-	// Format from exiftool : 0 deg 0' 0.00" N, 0 deg 0' 0.00" E
-	// Converted to array : [deg, min, sec, N/S, deg, min, sec, E/W]
-	// DMS to DD coordinates: deg * (min/60) * (sec/3600)
-	// N = positive, S = negative, E = positive, W = negative
-	let res = {};
-	gpsArr = geotag.replaceAll(' deg ', '|').replaceAll('\' ', '|').replaceAll('" ','|').replaceAll(', ','|').split('|');
-	latitude = parseInt(gpsArr[0]) + parseFloat(gpsArr[1]/60) + parseFloat(gpsArr[2]/3600);
-	res.latitude = (gpsArr[3] === 'S') ? latitude * -1 : latitude;
-	longitude = parseInt(gpsArr[4]) + parseFloat(gpsArr[5]/60) + parseFloat(gpsArr[6]/3600);
-	res.longitude = (gpsArr[7] === 'W') ? longitude * -1 : longitude;
-	return res;
 }
