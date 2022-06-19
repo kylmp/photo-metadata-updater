@@ -7,7 +7,8 @@
       label="Photo directory full path" 
       placeholder="Photo directory full path" 
       v-model="directory"
-      variant="outlined">
+      variant="outlined"
+      @keydown.enter.prevent="updateDirectory">
     </v-text-field>
     <v-btn @click="updateDirectory">Fetch</v-btn>
   </v-app-bar>
@@ -19,8 +20,8 @@ import { directoryStore } from '@/stores/directory-path'
 export default {
   name: 'AppHeader',
   methods: {
-    updateDirectory: function () {
-      directoryStore().$state = {'directory':this.directory};
+    updateDirectory: async function () {
+      directoryStore().$state = { 'directory': this.directory };
     }
   },
   data () {

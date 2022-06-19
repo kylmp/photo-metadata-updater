@@ -9,9 +9,9 @@ router.get('/photo', async function (req, res) {
 	let directory = req.query.dir || '';
 	let recursive = req.query.recursive || false;
 	let file = req.query.file || '';
+  let isMetaData = req.query.metadata || false;
 	if (directory !== '') {
-		let withMetaData = req.query.metadata || false;
-		if (withMetaData) {
+		if (isMetaData) {
 			shellSvc.getPhotoListWithMetaData(directory, recursive).then(photos => {
 				res.send(photos);
 			})
@@ -25,10 +25,15 @@ router.get('/photo', async function (req, res) {
 		}
 	}
 	else if (file !== '') {
-		shellSvc.getPhotoMetaData(file).then(photo => {
-			res.send(photo);
-		})
-		.catch(err => { res.status(500).send({error: err.message}); });
+    if (isMetaData) {
+      shellSvc.getPhotoMetaData(file).then(photo => {
+        res.send(photo);
+      })
+      .catch(err => { res.status(500).send({error: err.message}); });
+    }
+		else {
+      res.sendFile(file);
+    }
 	}
 	else {
 		res.status(400).send({error: 'dir or file query param required'});

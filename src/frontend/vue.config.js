@@ -17,6 +17,10 @@ module.exports = defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '^/img': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
     }
   }
 })

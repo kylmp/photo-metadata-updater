@@ -6,6 +6,7 @@ import 'vuetify/styles'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { loadFonts } from './plugins/webfontloader'
+import "@mdi/font/css/materialdesignicons.css";
 
 loadFonts()
 
@@ -14,18 +15,14 @@ const app = createApp(App);
 const pinia = createPinia()
 
 const lightTheme = {
-    dark: true,
     colors: {
-        background: '#FFFFFF',
-        surface: '#FFFFFF',
+        background: '#FAFAFA',
+        surface: '#FAFAFA',
         primary: '#3f51b5',
         'primary-darken-1': '#3949ab',
-        secondary: '#03DAC6',
-        'secondary-darken-1': '#018786',
+        'primary-darken-3': '#283593',
         error: '#B00020',
-        info: '#2196F3',
         success: '#4CAF50',
-        warning: '#FB8C00',
     }
 }
 
