@@ -10,7 +10,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var server;
 
 if (!shell.which('exiftool')) {
-  shell.echo('-e', 'Error - You must have exiftool installed to run this app\n');
+  shell.echo('-e', 'Error - You must have exiftool installed to run this app (https://exiftool.org/install.html)\n');
   shell.exit(1);
 }
 
@@ -19,7 +19,7 @@ console.log(`\nStarting ${appName}...\nRunning in the node ${process.env.NODE_EN
 (async () => {
 	app.use(bodyParser.urlencoded({ extended: false }));
 	app.use(bodyParser.json());
-	app.use(require('./src/route/routes'));
+	app.use('/api', require('./src/route/routes'));
 	app.use(express.static(path.join(__dirname, './public')));
 	server = app.listen(port, () => {
 		console.log(`${appName} is now running on port ${port}`);

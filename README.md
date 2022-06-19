@@ -7,7 +7,7 @@ Usage for running locally only.
 
 # Dependencies
 
-Requires nodejs and exiftool to be installed and globally accessable on your system.
+Requires [nodejs](https://nodejs.org/en/download/) and [exiftool](https://exiftool.org/install.html) to be installed and globally accessable on your system.
 
 
 # Build app
