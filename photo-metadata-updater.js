@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const shell = require('shelljs');
 const app = express();
+const imgFolder = require('./src/service/img-folder-service');
 require('dotenv').config();
 
 const port = process.env.PORT || 8000;
@@ -22,6 +23,7 @@ console.log(`\nStarting ${appName}...\nRunning in the node ${process.env.NODE_EN
 	app.use(bodyParser.json());
 	app.use('/api', require('./src/route/routes'));
 	app.use(express.static(path.join(__dirname, './public')));
+	imgFolder.createImageFolder();
 	server = app.listen(port, () => {
 		console.log(`${appName} is now running on port ${port}`);
 	})
@@ -30,6 +32,7 @@ console.log(`\nStarting ${appName}...\nRunning in the node ${process.env.NODE_EN
 const gracefulShutdown = () => {
 	if (typeof server !== 'undefined') {
 		console.log(`\nShutting down ${appName} server...`);
+		imgFolder.deleteImageFolder();
 		server.close(function () {
 			console.log(`${appName} server shutdown.`);
 		});

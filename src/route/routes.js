@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const shellSvc = require('../service/shell-service');
 const exifSvc = require('../service/exiftool-service');
+const imgFolder = require('../service/img-folder-service');
 
 // Get list of all photos in a directory (with metadata optional - long load times)
 // or get a single photo metadata by providing a file path
@@ -25,15 +26,11 @@ router.get('/photo', async function (req, res) {
 		}
 	}
 	else if (file !== '') {
-    if (isMetaData) {
-      shellSvc.getPhotoMetaData(file).then(photo => {
-        res.send(photo);
-      })
-      .catch(err => { res.status(500).send({error: err.message}); });
-    }
-		else {
-      res.sendFile(file);
-    }
+    shellSvc.getPhotoMetaData(file).then(photo => {
+      res.send(photo);
+      imgFolder.movePhotoToImageFolder(file);
+    })
+    .catch(err => { res.status(500).send({error: err.message}); });
 	}
 	else {
 		res.status(400).send({error: 'dir or file query param required'});
