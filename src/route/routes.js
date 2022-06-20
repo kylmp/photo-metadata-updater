@@ -49,4 +49,14 @@ router.post('/photo', async function (req, res) {
 	res.status(500).send("Error updating metadata");
 });
 
+router.get('/bing-api-key', async function (req, res) {
+  const apiKey = process.env.BING_API_KEY || '';
+  if (apiKey !== '') {
+    res.status(200).send(apiKey);
+  }
+  else {
+    res.status(400).send('No BING_API_KEY in .env file!');
+  }
+})
+
 module.exports = router;

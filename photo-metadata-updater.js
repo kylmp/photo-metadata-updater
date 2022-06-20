@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const shell = require('shelljs');
 const app = express();
+require('dotenv').config();
 
 const port = process.env.PORT || 8000;
 const appName = 'photo-metadata-updater';

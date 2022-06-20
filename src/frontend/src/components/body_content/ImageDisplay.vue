@@ -1,5 +1,5 @@
 <template>
-    <v-img src="img/hor.jpg"></v-img>
+    <v-img src="img/vert.jpg"></v-img>
 </template>
 
 <script>
