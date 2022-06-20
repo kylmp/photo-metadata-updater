@@ -35,10 +35,12 @@ export default {
   },
   watch: { 
     name: async function(newPhoto) { 
+      this.isAvailable = false;
+      this.photoName = '';
       let start = Date.now();
       while (this.isAvailable === false || (Date.now() - start) >= 30000) {
         this.isAvailable = await axios.get('/api/photo-available?name='+newPhoto);
-        await this.wait(500);
+        await this.wait(200);
       }
       this.photoName = newPhoto;
     }

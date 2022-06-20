@@ -22,20 +22,36 @@ module.exports = {
 			let tmp = item.split(': ');
 			infoMap.set(tmp[0].trim(), tmp[1]);
 		});
+    const {date, time} = extractDateTime(infoMap.get('Create Date'));
 		let res = { 
 			'name': infoMap.get('File Name'), 
 			'path': file,
 			'type': infoMap.get('File Type'),
 			'size': infoMap.get('File Size'),
 			'camera': infoMap.get('Camera Model Name'),
-			'created': infoMap.get('Create Date'),
+			'createDate': date,
+      'createTime': time,
 			'resolution': infoMap.get('Image Size'),
 			'projection': infoMap.get('Projection Type'),
 			'coordinates': coordinatesUtils.geotagToCoordinates(infoMap.get('GPS Position')),
-      'elevation': infoMap.get('GPS Altitude') || '0 m'
+      'elevation': mapElevation(infoMap.get('GPS Altitude') || '0 m Above') 
 		};
 		res.isGeotagged = (res.coordinates.latitude === 0 && res.coordinates.longitude === 0) ? false : true;
 		res.isHdr = res.name.includes("HDR");
 		return res;
 	}
+}
+
+function extractDateTime(created) {
+  let split = created.split(" ");
+  return {
+    "date": split[0].replaceAll(":", "-"),
+    "time": split[1]
+  }
+}
+
+function mapElevation(elevation) {
+  let split = elevation.split(" ");
+  let value = split[0] + split[1];
+  return (split[2] === "Below") ? '-' + value : value;
 }
