@@ -1,6 +1,6 @@
 <template>
-    <DefaultImage></DefaultImage>
-    <EquirectangularImage v-if="false"></EquirectangularImage>
+    <DefaultImage v-if="false"></DefaultImage>
+    <EquirectangularImage></EquirectangularImage>
 </template>
 
 <script>

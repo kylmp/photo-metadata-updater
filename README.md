@@ -4,10 +4,16 @@ Easily update and geotag picture metadata, with image view and map view.
 
 Usage for running locally only.
 
+# Libraries Used
+
+* [Pannellum](https://pannellum.org/) - equirectangular image projection viewer
+* [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/v8-web-control/creating-and-hosting-map-controls/) - map view
+    - Requires API key, store it in your `.env` file with name `BING_API_KEY`
+
 
 # Dependencies
 
-Requires [nodejs](https://nodejs.org/en/download/) and [exiftool](https://exiftool.org/install.html) to be installed and globally accessable on your system.
+Requires [exiftool](https://exiftool.org/install.html) to be installed and globally accessable on your system.
 
 
 # Build app

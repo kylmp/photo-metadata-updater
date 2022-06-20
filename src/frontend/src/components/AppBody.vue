@@ -6,7 +6,7 @@
         </v-col>
     </v-row>
     <v-row class="pt-4 fill-height" justify="center">
-        <v-col class="pr-1 mr-1">
+        <v-col class="pr-0 mr-0">
             <ImageDisplay></ImageDisplay>
         </v-col>
         <v-col>
