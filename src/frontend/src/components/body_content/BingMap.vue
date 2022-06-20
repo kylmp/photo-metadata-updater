@@ -7,7 +7,7 @@
 import axios from 'axios'
 
 export default {
-  name: 'BingMaps',
+  name: 'BingMap',
   mounted: function() {
     // map already loaded check
     if (document.getElementById("scriptBingMaps")) {
@@ -27,6 +27,8 @@ export default {
       scriptTag.async = true;
       scriptTag.defer = true;
       document.head.appendChild(scriptTag);
+    }).catch((err) => {
+      document.getElementById("map").innerHTML = "ERROR LOADING MAP: "+err.response.data;
     })
   },
   methods: {

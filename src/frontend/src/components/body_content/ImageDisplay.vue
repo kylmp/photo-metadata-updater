@@ -1,16 +1,20 @@
 <template>
-    <v-img src="img/vert.jpg"></v-img>
+    <DefaultImage></DefaultImage>
+    <EquirectangularImage v-if="false"></EquirectangularImage>
 </template>
 
 <script>
+import EquirectangularImage from './image_projections/EquirectangularProjection.vue';
+import DefaultImage from './image_projections/DefaultProjection.vue';
+
 export default {
   name: 'ImageDisplay',
+  components: {
+    EquirectangularImage,
+    DefaultImage,
+  }
 }
 </script>
 
 <style scoped>
-.v-img {
-    height: calc(100vh - 256px);
-    max-height: calc(100vh - 256px);
-}
 </style>

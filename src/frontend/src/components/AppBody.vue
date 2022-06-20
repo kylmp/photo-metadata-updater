@@ -5,12 +5,12 @@
             <MetadataDetails></MetadataDetails>
         </v-col>
     </v-row>
-    <v-row class="pt-4 fill-height" justify="center" align="center">
-        <v-col>
+    <v-row class="pt-4 fill-height" justify="center">
+        <v-col class="pr-1 mr-1">
             <ImageDisplay></ImageDisplay>
         </v-col>
         <v-col>
-            <BingMaps></BingMaps>
+            <BingMap></BingMap>
         </v-col>
     </v-row>
   </v-container>
@@ -19,14 +19,14 @@
 <script>
 import MetadataDetails from './body_content/MetadataDetails.vue';
 import ImageDisplay from './body_content/ImageDisplay.vue';
-import BingMaps from './body_content/BingMaps.vue';
+import BingMap from './body_content/BingMap.vue';
 
 export default {
   name: 'AppBody',
   components: {
     MetadataDetails,
     ImageDisplay,
-    BingMaps
+    BingMap
   }
 }
 </script>
