@@ -32,6 +32,7 @@ module.exports = {
 			'resolution': infoMap.get('Image Size'),
 			'projection': infoMap.get('Projection Type'),
 			'coordinates': coordinatesUtils.geotagToCoordinates(infoMap.get('GPS Position')),
+      'elevation': infoMap.get('GPS Altitude') || '0 m'
 		};
 		res.isGeotagged = (res.coordinates.latitude === 0 && res.coordinates.longitude === 0) ? false : true;
 		res.isHdr = res.name.includes("HDR");

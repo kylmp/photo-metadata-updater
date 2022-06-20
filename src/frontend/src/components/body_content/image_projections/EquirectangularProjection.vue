@@ -6,12 +6,23 @@
 /* eslint-disable */
 export default {
   name: 'EquirectangularImage',
-  mounted: function() {
-    pannellum.viewer('panorama', {
-      "type": "equirectangular",
-      "panorama": "img/360.jpg",
-      "autoLoad": true
-    });
+  props: ['photoName'],
+  data: () => ({
+    pano: 'undefined',
+  }),
+  watch: { 
+    photoName: async function(newPhoto) { 
+      if (this.pano !== 'undefined') {
+        this.pano.destroy();
+      }
+      this.pano = pannellum.viewer('panorama', {
+        "type": "equirectangular",
+        "panorama": "img/"+newPhoto,
+        "showZoomCtrl": false,
+        "autoRotate": -10,
+        "autoLoad": true
+      });
+    }
   }
 }
 </script>

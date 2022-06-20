@@ -3,8 +3,8 @@
     <v-col cols="12" md="8">
       <div id="details-title" class="text-subtitle-2 mt-1">
         <span>Metadata for </span>
-        <span class="text-primary">IMG_20220530_114358_810_812_HDR.jpg</span>
-        <span class="text-grey-darken-1 pl-2">(9.1 MB, 6080x3040)</span>
+        <span class="text-primary">{{metadata.name}}</span>
+        <span class="text-grey-darken-1 pl-2">({{metadata.size}}, {{metadata.resolution}})</span>
       </div>
     </v-col>
     <v-col cols="12" md="4" class="text-right">
@@ -87,6 +87,7 @@
 <script>
 export default {
   name: 'MetadataDetails',
+  props: ['metadata'],
   data: () => ({
     date: '2022-05-26',
     menu2: false,

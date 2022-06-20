@@ -13,10 +13,11 @@
         </v-progress-circular>
       </v-list-subheader>
       <v-list-item
-        v-for="photo in photos"
+        v-for="(photo, i) in photos"
         :key="photo.name"
-        :value="photo.path"
-        active-color="primary">
+        :value="i"
+        active-color="primary"
+        @click="$emit('selectedPhoto', photos[i])">
         <v-list-item-title v-text="photo.name"></v-list-item-title>
         <v-spacer></v-spacer>
         <v-list-item-avatar v-if="photo.isGeotagged === true" class="pa-0 mt-0 mb-0 ml-n2 mr-n1 pr-n2">

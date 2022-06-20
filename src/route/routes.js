@@ -37,6 +37,19 @@ router.get('/photo', async function (req, res) {
 	}
 });
 
+router.get('/photo-available', async function(req, res) {
+  let name = req.query.name || '';
+  if (name) {
+    imgFolder.isPhotoAvailable(name).then(result => {
+      res.send(result);
+    })
+    .catch(err => { res.status(500).send({error: err.message}); });
+  }
+  else {
+    res.status(400).send('name query parameter required');
+  }
+});
+
 // Update a photo longitude and latitude metadata
 router.post('/photo', async function (req, res) {
 	let updated = exifSvc.setGeotag(req.body.file, req.body.latitude, req.body.longitude);

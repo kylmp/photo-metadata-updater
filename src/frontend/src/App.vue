@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <AppHeader></AppHeader>
-    <PhotoList></PhotoList>
+    <PhotoList @selected-photo="onPhotoSelected"></PhotoList>
     <v-main>
-      <AppBody></AppBody>
+      <AppBody :photo="selectedPhoto"></AppBody>
     </v-main>
   </v-app>
 </template>
@@ -19,7 +19,15 @@ export default {
     AppHeader,
     AppBody,
     PhotoList
-  }
+  },
+  methods: {
+    onPhotoSelected (value) {
+      this.selectedPhoto = value;
+    }
+  },
+  data: () => ({
+    selectedPhoto: {},
+  }),
 }
 </script>
 

@@ -1,6 +1,7 @@
 const utils = require('../utils/general-utils');
 const asyncShell = require('../utils/async-shell');
 const path = require('path');
+const { echo } = require('shelljs');
 
 module.exports = {
   movePhotoToImageFolder: async function(file) {
@@ -16,7 +17,13 @@ module.exports = {
 
   deleteImageFolder: async function() {
     const command = `rm -R "${getImageDirectory()}"`;
-    asyncShell.exec(command).catch(err => console.log(err));;
+    asyncShell.exec(command).catch(err => console.log(err));
+  },
+
+  isPhotoAvailable: async function(photoName) {
+    const command = `[ -f "${getImageDirectory()}/${photoName}" ] && echo true`;
+    const output = await asyncShell.exec(command).catch(err => console.log(err));
+    return output || "false";
   },
 }
 
