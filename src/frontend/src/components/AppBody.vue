@@ -2,7 +2,7 @@
   <v-container v-if="Object.keys(photo).length !== 0" height="100%">
     <v-row>
       <v-col>
-        <MetadataDetails :metadata="metadata" @coordinates-update="coordinatesUpdated"></MetadataDetails>
+        <MetadataDetails :metadata="metadata" @coordinates="coordinatesUpdated"></MetadataDetails>
       </v-col>
     </v-row>
     <v-row class="pt-4 fill-height" justify="center">

@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import { createVuetify } from 'vuetify'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import 'vuetify/styles'
 import * as components from 'vuetify/components'
@@ -11,8 +10,6 @@ import "@mdi/font/css/materialdesignicons.css";
 loadFonts()
 
 const app = createApp(App);
-
-const pinia = createPinia()
 
 const lightTheme = {
     colors: {
@@ -37,6 +34,5 @@ const vuetify = createVuetify({
     }
 })
 
-app.use(pinia)
 app.use(vuetify)
 app.mount('#app')

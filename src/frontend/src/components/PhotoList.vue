@@ -30,13 +30,12 @@
 
 <script>
 import axios from 'axios'
-import { directoryStore } from '@/stores/directory-path'
 import { ref } from 'vue'
 
 export default {
   name: 'PhotoList',
+  props: ['directory'],
   setup() {
-    const directory = directoryStore();
     let photos = ref([]);
     let loadingMetadata = ref(false);
 
@@ -72,17 +71,17 @@ export default {
         });
     }
 
-    directory.$subscribe((mutation, state) => {
-      updateList(state.directory);
-    });
-
     return {
-      directory,
       photos,
       loadingMetadata,
       updateList,
     }
   },
+  watch: { 
+    directory: async function(newDir) { 
+      this.updateList(newDir);
+    }
+  }
 }
 </script>
 

@@ -15,13 +15,12 @@
 </template>
 
 <script>
-import { directoryStore } from '@/stores/directory-path'
-
 export default {
   name: 'AppHeader',
+  emits: ["directory"],
   methods: {
     updateDirectory: async function () {
-      directoryStore().$state = { 'directory': this.directory };
+      this.$emit('directory', this.directory);
     }
   },
   data () {

@@ -78,7 +78,7 @@
 export default {
   name: 'MetadataDetails',
   props: ['metadata'],
-  emits: ["coordinatesUpdate"],
+  emits: ["coordinates"],
   watch: { 
     metadata: async function(newData) { 
       this.elevation = newData.elevation;
@@ -100,7 +100,7 @@ export default {
   methods: {
     coordinatesUpdate () {
       this.ensureValidCoordinates();
-      this.$emit('coordinatesUpdate', {"latitude": this.latitude, "longitude": this.longitude});
+      this.$emit('coordinates', {"latitude": this.latitude, "longitude": this.longitude});
     },
     ensureValidCoordinates() {
       this.latitude = (this.latitude > 90) ? 90 : this.latitude;

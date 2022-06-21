@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <AppHeader></AppHeader>
-    <PhotoList @selected-photo="onPhotoSelected"></PhotoList>
+    <AppHeader @directory="directoryUpdated"></AppHeader>
+    <PhotoList :directory="directory" @selected-photo="onPhotoSelected"></PhotoList>
     <v-main>
       <AppBody :photo="selectedPhoto"></AppBody>
     </v-main>
@@ -23,10 +23,14 @@ export default {
   methods: {
     onPhotoSelected (value) {
       this.selectedPhoto = value;
+    },
+    directoryUpdated (dir) {
+      this.directory = dir;
     }
   },
   data: () => ({
     selectedPhoto: {},
+    directory: '',
   }),
 }
 </script>
