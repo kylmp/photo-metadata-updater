@@ -90,6 +90,7 @@ export default {
     coordinates: function(newCoordinates) { 
       this.latitude = newCoordinates.latitude;
       this.longitude = newCoordinates.longitude;
+      this.ensureValidCoordinates();
     }
   },
   data: () => ({

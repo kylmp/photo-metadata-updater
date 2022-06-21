@@ -47,15 +47,10 @@ export default {
         console.log('error getting photo metadata');
       });
     },
-    coordinates: function(c) {
-      this.coordinates = c;
+    coordinates: function(newCoordinates) {
+      this.coordinates = newCoordinates;
     }
   },
-  methods: {
-    coordinatesUpdated (coords) {
-      this.coordinates = coords;
-    }
-  }
 }
 </script>
 
