@@ -2,7 +2,7 @@
   <v-container v-if="Object.keys(photo).length !== 0" height="100%">
     <v-row>
       <v-col>
-        <MetadataDetails :metadata="metadata" @coordinates="coordinatesUpdated"></MetadataDetails>
+        <MetadataDetails :metadata="metadata" v-model:coordinates="coordinates"></MetadataDetails>
       </v-col>
     </v-row>
     <v-row class="pt-4 fill-height" justify="center">
@@ -10,7 +10,7 @@
         <ImageDisplay :projection="metadata.projection" :name="metadata.name"></ImageDisplay>
       </v-col>
       <v-col>
-        <BingMap :coordinates="coordinates"></BingMap>
+        <BingMap v-model:coordinates="coordinates"></BingMap>
       </v-col>
     </v-row>
   </v-container>
@@ -46,11 +46,13 @@ export default {
       .catch(() => { 
         console.log('error getting photo metadata');
       });
+    },
+    coordinates: function(c) {
+      this.coordinates = c;
     }
   },
   methods: {
     coordinatesUpdated (coords) {
-      console.log("coords updated to " + coords);
       this.coordinates = coords;
     }
   }
