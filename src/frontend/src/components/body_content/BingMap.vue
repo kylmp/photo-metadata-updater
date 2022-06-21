@@ -1,5 +1,4 @@
 <template>
-    <v-btn flat height="32" color="white" @click="updateCoordinates">Update</v-btn>
     <div id="map" ref="map"></div>
 </template>
 
@@ -52,6 +51,7 @@ export default {
         showZoomButtons: false
       });
       this.map.entities.push(new Microsoft.Maps.Pushpin(center));
+      Microsoft.Maps.Events.addHandler(this.map, 'click', this.handleMapClick);
     },
     ChangeLocation: function(latitude, longitude) {
       if (this.map !== 'undefined') {
@@ -63,12 +63,12 @@ export default {
         this.map.entities.push(new Microsoft.Maps.Pushpin(center));
       }
     },
-    updateCoordinates: function() {
+    handleMapClick: function(click) {
       this.$emit("update:coordinates", {
-        "latitude": 10,
-        "longitude": 10
+        "latitude": click.location.latitude,
+        "longitude": click.location.longitude
       });
-    }
+    },
   },
   watch: { 
     coordinates: async function(newCoordinates) { 
