@@ -23,13 +23,15 @@ export default {
     DefaultImage,
   },
   data: () => ({
+    pollInterval: 100,
+    timeout: 30000,
     isAvailable: false,
     photoName: ''
   }),
   methods: {
-    wait (ms = 500) {
+    wait () {
       return new Promise(resolve => {
-        setTimeout(resolve, ms);
+        setTimeout(resolve, this.pollInterval);
       });
     }
   },
@@ -37,10 +39,10 @@ export default {
     name: async function(newPhoto) { 
       this.isAvailable = false;
       this.photoName = '';
-      let start = Date.now();
-      while (this.isAvailable === false || (Date.now() - start) >= 30000) {
+      const start = Date.now();
+      while (this.isAvailable === false || (Date.now() - start) >= this.timeout) {
         this.isAvailable = await axios.get('/api/photo-available?name='+newPhoto);
-        await this.wait(200);
+        await this.wait();
       }
       this.photoName = newPhoto;
     }

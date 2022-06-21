@@ -15,6 +15,26 @@ module.exports = {
 		return false;
 	},
 
+  // Input date requires format YYYY-MM-DD | Input time requires format HH:MM:SS
+  setDateTime: function(file, date, time) {
+    if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(date) && /[0-9]{2}:[0-9]{2}:[0-9]{2}/.test(time)) {
+      const datetime = `${date.replaceAll("-", ":")} ${time}`;
+      const cmd = `exiftool ${file} -datetimeoriginal="${datetime}" -createdate="${datetime}"`;
+      if (shell.exec(cmd).code === 0) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  setCamera: function(file, camera) {
+    const cmd = `exiftool ${file} -model="${camera}"`;
+    if (shell.exec(cmd).code === 0) {
+      return true;
+    }
+    return false;
+  },
+
 	getMetaData: async function(file) {
 		let infoMap = new Map();
 		let data = await asyncShell.exec(`exiftool "${file}"`).catch(err => {throw err});

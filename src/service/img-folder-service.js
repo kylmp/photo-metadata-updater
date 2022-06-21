@@ -1,7 +1,6 @@
 const utils = require('../utils/general-utils');
 const asyncShell = require('../utils/async-shell');
 const path = require('path');
-const { echo } = require('shelljs');
 
 module.exports = {
   movePhotoToImageFolder: async function(file) {
