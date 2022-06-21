@@ -3,7 +3,7 @@
     <AppHeader @directory="directoryUpdated"></AppHeader>
     <PhotoList :directory="directory" @selected-photo="onPhotoSelected"></PhotoList>
     <v-main>
-      <AppBody :photo="selectedPhoto"></AppBody>
+      <AppBody :photo="selectedPhoto" :directory="directory"></AppBody>
     </v-main>
     <AlertBox ref="alert"></AlertBox>
   </v-app>

@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="Object.keys(photo).length !== 0" height="100%">
+  <v-container v-if="!noImage">
     <v-row>
       <v-col>
         <MetadataDetails :metadata="metadata" v-model:coordinates="coordinates"></MetadataDetails>
@@ -14,7 +14,7 @@
       </v-col>
     </v-row>
   </v-container>
-  <NoSelectedImage v-if="Object.keys(photo).length === 0"></NoSelectedImage>
+  <NoSelectedImage v-if="noImage" :type="noImageType"></NoSelectedImage>
 </template>
 
 <script>
@@ -26,7 +26,7 @@ import NoSelectedImage from './body_content/NoSelectedImage.vue';
 
 export default {
   name: 'AppBody',
-  props: ['photo'],
+  props: ['photo', 'directory'],
   components: {
     MetadataDetails,
     ImageDisplay,
@@ -36,21 +36,34 @@ export default {
   data: () => ({
     metadata: {},
     coordinates: {"latitude": 0, "longitude": 0},
+    noImage: true,
+    noImageType: 'unselected'
   }),
   watch: { 
-    photo: function(newPhoto) { 
-      axios.get('/api/photo?file='+encodeURI(newPhoto.path)).then(res => {
-        this.metadata = res.data;
-        this.coordinates = res.data.coordinates;
-      })
-      .catch(() => { 
-        console.log('error getting photo metadata');
-      });
+    photo: function(newPhoto) {
+      this.loadImage(newPhoto);
     },
     coordinates: function(newCoordinates) {
       this.coordinates = newCoordinates;
+    },
+    directory: function() { 
+      this.noImage = true;
+      this.noImageType = 'unselected';
     }
   },
+  methods: {
+    loadImage (newPhoto) {
+      axios.get('/api/photo?file='+encodeURI(newPhoto.path)).then(res => {
+        this.metadata = res.data;
+        this.coordinates = res.data.coordinates;
+        this.noImage = false;
+      })
+      .catch((err) => { 
+        this.noImage = true;
+        this.noImageType = (err.response.status === 400) ? 'notfound' : 'error';
+      });
+    }
+  }
 }
 </script>
 

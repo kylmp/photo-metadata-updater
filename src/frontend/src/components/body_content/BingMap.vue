@@ -12,12 +12,7 @@ export default {
   data: () => ({
     map: 'undefined',
   }),
-  mounted: function() {
-    // map already loaded check
-    if (document.getElementById("scriptBingMaps")) {
-      return; 
-    }
-
+  created: function() {
     // Global callback function for Bing maps api response
     window.OnLoadBingMapsApi = () => this.InitMap();
 

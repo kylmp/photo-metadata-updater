@@ -8,7 +8,7 @@
       </div>
     </v-col>
     <v-col cols="12" md="4" class="text-right">
-      <v-btn flat height="32" color="white" @click="resetFields">Reset</v-btn>
+      <v-btn flat height="32" color="white" @click="setFields">Reset</v-btn>
       <v-btn flat height="32" color="success">Save</v-btn>
     </v-col>
   </v-row>
@@ -78,14 +78,12 @@
 export default {
   name: 'MetadataDetails',
   props: ['metadata', 'coordinates'],
+  created() {
+    this.setFields();
+  },
   watch: { 
-    metadata: async function(newData) { 
-      this.elevation = newData.elevation;
-      this.longitude = newData.coordinates.longitude;
-      this.latitude = newData.coordinates.latitude;
-      this.createDate = newData.createDate;
-      this.createTime = newData.createTime;
-      this.camera = newData.camera;
+    metadata: function() { 
+      this.setFields();
     },
     coordinates: function(newCoordinates) { 
       this.latitude = newCoordinates.latitude;
@@ -115,7 +113,7 @@ export default {
     isGeotagged() {
       return this.longitude !== 0 || this.latitude !== 0;
     },
-    resetFields() {
+    setFields() {
       this.elevation = this.$props.metadata.elevation;
       this.longitude = this.$props.metadata.coordinates.longitude;
       this.latitude = this.$props.metadata.coordinates.latitude;

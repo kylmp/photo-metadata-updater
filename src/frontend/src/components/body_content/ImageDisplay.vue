@@ -22,6 +22,9 @@ export default {
     EquirectangularImage,
     DefaultImage,
   },
+  created() {
+    this.loadPhoto()
+  },
   data: () => ({
     pollInterval: 100,
     timeout: 30000,
@@ -33,18 +36,21 @@ export default {
       return new Promise(resolve => {
         setTimeout(resolve, this.pollInterval);
       });
-    }
-  },
-  watch: { 
-    name: async function(newPhoto) { 
+    },
+    async loadPhoto() {
       this.isAvailable = false;
       this.photoName = '';
       const start = Date.now();
       while (this.isAvailable === false || (Date.now() - start) >= this.timeout) {
-        this.isAvailable = await axios.get('/api/photo-available?name='+newPhoto);
+        this.isAvailable = await axios.get('/api/photo-available?name='+this.$props.name);
         await this.wait();
       }
-      this.photoName = newPhoto;
+      this.photoName = this.$props.name;
+    }
+  },
+  watch: { 
+    name: function() { 
+      this.loadPhoto();
     }
   }
 }

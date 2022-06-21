@@ -20,6 +20,10 @@ export default {
   emits: ["directory"],
   methods: {
     updateDirectory: async function () {
+      if (!this.directory) {
+        this.$root.alert.error("Directory path required!");
+        return;
+      }
       this.$emit('directory', this.directory);
     }
   },

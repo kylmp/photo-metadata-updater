@@ -31,12 +31,7 @@ module.exports = {
 	},
 
 	getPhotoMetaData: async function(file) {
-		try {
-			return await exif.getMetaData(file);
-		}
-		catch(error) {
-			console.log("error getting exifdata - ", error);
-			return {'path': file};
-		}
+		let metadata = await exif.getMetaData(file).catch(err => {throw err});
+    return metadata;
 	},
 }

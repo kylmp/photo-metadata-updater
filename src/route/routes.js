@@ -15,22 +15,25 @@ router.get('/photo', async function (req, res) {
 		if (isMetaData) {
 			shellSvc.getPhotoListWithMetaData(directory, recursive).then(photos => {
 				res.send(photos);
-			})
-			.catch(err => { res.status(500).send({error: err.message}); });
+			}).catch(err => { 
+        err.includes("No such file or directory") ? res.status(400).send() : res.status(500).send({error: err});
+      });
 		}
 		else { 
 			shellSvc.getPhotoList(directory, recursive).then(photos => {
 				res.send(photos);
-			})
-			.catch(err => { res.status(500).send({error: err.message}); });
+			}).catch(err => { 
+        err.includes("No such file or directory") ? res.status(400).send() : res.status(500).send({error: err});
+      });
 		}
 	}
 	else if (file !== '') {
     shellSvc.getPhotoMetaData(file).then(photo => {
       res.send(photo);
       imgFolder.movePhotoToImageFolder(file);
-    })
-    .catch(err => { res.status(500).send({error: err.message}); });
+    }).catch(err => { 
+      err.includes("File not found") ? res.status(400).send() : res.status(500).send({error: err});
+    });
 	}
 	else {
 		res.status(400).send({error: 'dir or file query param required'});

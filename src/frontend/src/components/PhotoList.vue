@@ -17,7 +17,7 @@
         :key="photo.name"
         :value="i"
         active-color="primary"
-        @click="$emit('selectedPhoto', photos[i])">
+        @click="itemClicked(i)">
         <v-list-item-title v-text="photo.name"></v-list-item-title>
         <v-spacer></v-spacer>
         <v-list-item-avatar v-if="photo.isGeotagged === true" class="pa-0 mt-0 mb-0 ml-n2 mr-n1 pr-n2">
@@ -30,55 +30,52 @@
 
 <script>
 import axios from 'axios'
-import { ref } from 'vue'
 
 export default {
   name: 'PhotoList',
   props: ['directory'],
-  setup() {
-    let photos = ref([]);
-    let loadingMetadata = ref(false);
-
-    // Methods
-    const updateList = async function (directoryPath) {
-      loadingMetadata.value = true;
+  data: () => ({
+    photos: [],
+    loadingMetadata: false,
+    selection: []
+  }),
+  methods: {
+    async updateList (directoryPath) {
+      this.loadingMetadata = true;
       // Get photo list (fast)
       axios
-        .get('/api/photo?dir='+encodeURI(directoryPath))
-        .then((result) => {
-          photos.value = result.data.sort((a, b) => a.name.localeCompare(b.name));
-        })
-        .catch(() => { 
-          photos.value = [];
-          console.log('error getting list');
+        .get('/api/photo?dir='+encodeURI(directoryPath)).then((result) => {
+          if (result.data.length === 0) {
+            this.$root.alert.send("Directory loaded, but no photos found")
+          }
+          this.photos = result.data.sort((a, b) => a.name.localeCompare(b.name));
+        }).catch((err) => { 
+          this.photos = [];
+          const alertConfig = (err.response.status === 400) ?
+            {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
+            {timeout: 5000, color: 'error', message: "Error loading photo list, is the backend running?"};
+          this.$root.alert.send(alertConfig);
         });
       // Get photo metadata list (slow) - used for displaying if photos are already geotagged
-      axios
-        .get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true')
-        .then((result) => {
-          for (let photo in photos.value) {
+      axios.get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true').then((result) => {
+          for (let photo in this.photos) {
             for (let meta in result.data) {
-              if (photos.value[photo].name == result.data[meta].name) {
-                photos.value[photo].isGeotagged = result.data[meta].isGeotagged;
+              if (this.photos[photo].name == result.data[meta].name) {
+                this.photos[photo].isGeotagged = result.data[meta].isGeotagged;
               }
             }
           }
-          loadingMetadata.value = false;
-        })
-        .catch(() => { 
-          loadingMetadata.value = false;
-          console.log('error getting list metadata');
+          this.loadingMetadata = false;
+        }).catch(() => { 
+          this.loadingMetadata = false;
         });
-    }
-
-    return {
-      photos,
-      loadingMetadata,
-      updateList,
+    },
+    itemClicked (index) {
+      this.$emit('selectedPhoto', this.photos[index])
     }
   },
   watch: { 
-    directory: async function(newDir) { 
+    directory: function(newDir) { 
       this.updateList(newDir);
     }
   }
