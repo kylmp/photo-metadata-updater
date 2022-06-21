@@ -8,7 +8,8 @@
       </div>
     </v-col>
     <v-col cols="12" md="4" class="text-right">
-      <v-btn flat height="32" color="success">Save Metadata</v-btn>
+      <v-btn flat height="32" color="white" @click="resetFields">Reset</v-btn>
+      <v-btn flat height="32" color="success">Save</v-btn>
     </v-col>
   </v-row>
   <v-row>
@@ -52,20 +53,22 @@
     </v-col>
     <v-col cols="12" md="4" hide-details="true">
       <v-text-field
-        label="Longitude"
-        placeholder="Longitude"
-        v-model="longitude"
-        variant="outlined"
-        density="compact"
-      ></v-text-field>
-    </v-col>
-    <v-col cols="12" md="4" hide-details="true">
-      <v-text-field
         label="Latitude"
         placeholder="Latitude"
         v-model="latitude"
         variant="outlined"
         density="compact"
+        @input="coordinatesUpdate"
+      ></v-text-field>
+    </v-col>
+    <v-col cols="12" md="4" hide-details="true">
+      <v-text-field
+        label="Longitude"
+        placeholder="Longitude"
+        v-model="longitude"
+        variant="outlined"
+        density="compact"
+        @input="coordinatesUpdate"
       ></v-text-field>
     </v-col>
   </v-row>
@@ -75,6 +78,7 @@
 export default {
   name: 'MetadataDetails',
   props: ['metadata'],
+  emits: ["coordinatesUpdate"],
   watch: { 
     metadata: async function(newData) { 
       this.elevation = newData.elevation;
@@ -93,6 +97,30 @@ export default {
     createTime: '',
     camera: ''
   }),
+  methods: {
+    coordinatesUpdate () {
+      this.ensureValidCoordinates();
+      this.$emit('coordinatesUpdate', {"latitude": this.latitude, "longitude": this.longitude});
+    },
+    ensureValidCoordinates() {
+      this.latitude = (this.latitude > 90) ? 90 : this.latitude;
+      this.latitude = (this.latitude < -90) ? -90 : this.latitude;
+      this.longitude = (this.longitude > 180) ? 180 : this.longitude;
+      this.longitude = (this.longitude < -180) ? -180 : this.longitude;
+    },
+    isGeotagged() {
+      return this.longitude !== 0 || this.latitude !== 0;
+    },
+    resetFields() {
+      this.elevation = this.$props.metadata.elevation;
+      this.longitude = this.$props.metadata.coordinates.longitude;
+      this.latitude = this.$props.metadata.coordinates.latitude;
+      this.createDate = this.$props.metadata.createDate;
+      this.createTime = this.$props.metadata.createTime;
+      this.camera = this.$props.metadata.camera;
+      this.coordinatesUpdate();
+    }
+  }
 }
 </script>
 

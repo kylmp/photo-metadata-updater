@@ -8,6 +8,10 @@ import axios from 'axios'
 
 export default {
   name: 'BingMap',
+  props: ['coordinates'],
+  data: () => ({
+    map: 'undefined',
+  }),
   mounted: function() {
     // map already loaded check
     if (document.getElementById("scriptBingMaps")) {
@@ -33,15 +37,35 @@ export default {
   },
   methods: {
     InitMap: function() {
-      var mapElement = this.$refs.map;
-
+      const center = new Microsoft.Maps.Location(this.$props.coordinates.latitude, this.$props.coordinates.longitude);
+      const mapElement = this.$refs.map;
       this.map = new Microsoft.Maps.Map(mapElement, {
         mapTypeId: Microsoft.Maps.MapTypeId.road,
         zoom: 10,
         maxZoom: 21,
-        center: new Microsoft.Maps.Location(57.416504, -6.194331),
-        maxNetworkLinkDepth: 3
+        center: center,
+        maxNetworkLinkDepth: 3,
+        enableClickableLogo: false,
+        showLocateMeButton: false,
+        showTrafficButton: false,
+        showZoomButtons: false
       });
+      this.map.entities.push(new Microsoft.Maps.Pushpin(center));
+    },
+    ChangeLocation: function(latitude, longitude) {
+      if (this.map !== 'undefined') {
+        this.map.entities.clear();
+        const center = new Microsoft.Maps.Location(latitude, longitude);
+        this.map.setView({
+          center: center,
+        });
+        this.map.entities.push(new Microsoft.Maps.Pushpin(center));
+      }
+    }
+  },
+  watch: { 
+    coordinates: async function(newCoordinates) { 
+      this.ChangeLocation(newCoordinates.latitude, newCoordinates.longitude);
     }
   }
 }
