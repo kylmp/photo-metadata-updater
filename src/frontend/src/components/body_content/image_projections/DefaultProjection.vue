@@ -1,11 +1,19 @@
 <template>
-    <v-img :src="'img/' + photoName"></v-img>
+    <v-img :src="source"></v-img>
 </template>
 
 <script>
 export default {
   name: 'DefaultImage',
   props: ['photoName'],
+  watch: { 
+    photoName: function(newPhoto) {
+      this.source = `img/${newPhoto}`
+    }
+  },
+  data: () => ({
+    source: '',
+  })
 }
 </script>
 
