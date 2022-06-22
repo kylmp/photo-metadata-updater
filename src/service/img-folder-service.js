@@ -11,7 +11,6 @@ module.exports = {
   createImageFolder: async function() {
     const command = `mkdir "${getImageDirectory()}"`;
     asyncShell.exec(command).catch(err => console.log(err));
-    loadTestImage();
   },
 
   deleteImageFolder: async function() {
@@ -28,11 +27,4 @@ module.exports = {
 
 function getImageDirectory() {
   return path.join(__dirname, '../../public/img');
-}
-
-function loadTestImage() {
-  if (process.env.TEST_IMG) {
-    const command = `cp "${process.env.TEST_IMG}" "${getImageDirectory()}/360.jpg"`;
-    asyncShell.exec(command).catch(err => console.log(err));
-  }
 }

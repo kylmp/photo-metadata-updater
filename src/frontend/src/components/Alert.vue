@@ -60,3 +60,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.v-snackbar__content {
+  white-space: pre-line;
+}
+</style>

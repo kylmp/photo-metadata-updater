@@ -7,7 +7,7 @@ module.exports = {
 		if (coordinatesUtils.isValidCoordinates(lat, lon)) {
 			let latRef = (lat < 0) ? 'S' : 'N';
 			let lonRef = (lon < 0) ? 'W' : 'E';
-			let cmd = `exiftool ${file} -gpslatitude=${lat}  -gpslongitude=${lon} -gpslatituderef=${latRef} -gpslongituderef=${lonRef}`;
+			let cmd = `exiftool "${file}" -gpslatitude=${lat}  -gpslongitude=${lon} -gpslatituderef=${latRef} -gpslongituderef=${lonRef} -overwrite_original -q -q`;
 			if (shell.exec(cmd).code === 0) {
 				return true;
 			}
@@ -19,7 +19,7 @@ module.exports = {
   setDateTime: function(file, date, time) {
     if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(date) && /[0-9]{2}:[0-9]{2}:[0-9]{2}/.test(time)) {
       const datetime = `${date.replaceAll("-", ":")} ${time}`;
-      const cmd = `exiftool ${file} -datetimeoriginal="${datetime}" -createdate="${datetime}"`;
+      const cmd = `exiftool "${file}" -datetimeoriginal="${datetime}" -createdate="${datetime}" -overwrite_original -q -q`;
       if (shell.exec(cmd).code === 0) {
         return true;
       }
@@ -28,7 +28,19 @@ module.exports = {
   },
 
   setCamera: function(file, camera) {
-    const cmd = `exiftool ${file} -model="${camera}"`;
+    const cmd = `exiftool "${file}" -model="${camera}" -overwrite_original -q -q`;
+    if (shell.exec(cmd).code === 0) {
+      return true;
+    }
+    return false;
+  },
+
+  setElevation: function(file, elevation) {
+    const direction = (elevation.charAt(0) === '-') ? "Below Sea Level" : "Above Sea Level"
+    elevation = elevation.replaceAll('m', '');
+    elevation = elevation.replaceAll('M', '');
+    const formattedElevation = `${elevation} m ${direction}`;
+    const cmd = `exiftool "${file}" -gpsaltitude=="${formattedElevation}" -overwrite_original -q -q`;
     if (shell.exec(cmd).code === 0) {
       return true;
     }

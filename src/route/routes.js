@@ -53,13 +53,20 @@ router.get('/photo-available', async function(req, res) {
   }
 });
 
-// Update a photo longitude and latitude metadata
+// Update a photos metadata
 router.post('/photo', async function (req, res) {
-	let updated = exifSvc.setGeotag(req.body.file, req.body.latitude, req.body.longitude);
-	if (updated) {
+  let response = '';
+  const { file, longitude, latitude, elevation, date, time, camera } = req.body;
+	response += exifSvc.setGeotag(file, latitude, longitude) ? '' : 'Error updating coordinates, '
+  response += exifSvc.setDateTime(file, date, time) ? '' : 'Error updating create date and time, '
+  response += exifSvc.setCamera(file, camera) ? '' : 'Error updating camera, '
+  response += exifSvc.setElevation(file, elevation) ? '' : 'Error updating elevation, '
+	if (response === '') {
 		res.status(200).send("Updated");
 	}
-	res.status(500).send("Error updating metadata");
+  else {
+    res.status(500).send(response.slice(0, -2));
+  }
 });
 
 router.get('/bing-api-key', async function (req, res) {
