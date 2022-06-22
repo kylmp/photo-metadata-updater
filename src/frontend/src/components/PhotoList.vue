@@ -75,8 +75,11 @@ export default {
     }
   },
   watch: { 
-    directory: function(newDir) { 
-      this.updateList(newDir);
+    directory: {
+      handler(newDir) {
+        this.updateList(newDir.dir);
+      },
+      deep: true
     }
   }
 }

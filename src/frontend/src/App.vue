@@ -31,12 +31,12 @@ export default {
       this.selectedPhoto = value;
     },
     directoryUpdated (dir) {
-      this.directory = dir;
+      this.directory = {dir: dir, time: Date.now()};
     }
   },
   data: () => ({
     selectedPhoto: {},
-    directory: '',
+    directory: {},
   }),
 }
 </script>

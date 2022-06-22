@@ -46,9 +46,12 @@ export default {
     coordinates: function(newCoordinates) {
       this.coordinates = newCoordinates;
     },
-    directory: function() { 
-      this.noImage = true;
-      this.noImageType = 'unselected';
+    directory: { 
+      handler() {
+        this.noImage = true;
+        this.noImageType = 'unselected';
+      },
+      deep: true
     }
   },
   methods: {
