@@ -12,26 +12,48 @@ loadFonts()
 const app = createApp(App);
 
 const lightTheme = {
-    colors: {
-        background: '#FAFAFA',
-        surface: '#FAFAFA',
-        primary: '#3f51b5',
-        'primary-darken-1': '#3949ab',
-        'primary-darken-3': '#283593',
-        error: '#B00020',
-        success: '#4CAF50',
-    }
+  colors: {
+    background: '#FAFAFA',
+    surface: '#FAFAFA',
+    primary: '#3f51b5',
+    'primary-darken-1': '#3949ab',
+    divider: '#283593',
+    error: '#B00020',
+    success: '#4CAF50',
+    'img-name': '#3f51b5',
+    'btn-save': '#4CAF50',
+    'resolution': '#757575',
+    'list-load': '#3f51b5'
+  }
+}
+
+const darkTheme = {
+  dark: true,
+  colors: {
+    background: '#121212',
+    surface: '#212121',
+    primary: '#1565C0',
+    'primary-darken-1': '#0D47A1',
+    error: '#B00020',
+    success: '#4CAF50',
+    divider: '#000000',
+    'img-name': '#42A5F5',
+    'btn-save': '#43A047',
+    'resolution': '#BDBDBD',
+    'list-load': '#1E88E5'
+  }
 }
 
 const vuetify = createVuetify({
-    components,
-    directives,
-    theme: {
-        defaultTheme: 'lightTheme',
-        themes: {
-            lightTheme,
-        }
+  components,
+  directives,
+  theme: {
+    defaultTheme: 'lightTheme',
+    themes: {
+      lightTheme,
+      darkTheme
     }
+  }
 })
 
 app.use(vuetify)

@@ -3,13 +3,13 @@
     <v-col cols="12" md="8">
       <div id="details-title" class="text-subtitle-2 mt-1">
         <span>Metadata for </span>
-        <span class="text-primary">{{metadata.name}}</span>
-        <span class="text-grey-darken-1 pl-2">({{metadata.size}}, {{metadata.resolution}})</span>
+        <span class="text-img-name">{{metadata.name}}</span>
+        <span class="text-resolution pl-2">({{metadata.size}}, {{metadata.resolution}})</span>
       </div>
     </v-col>
     <v-col cols="12" md="4" class="text-right">
-      <v-btn flat height="32" color="white" @click="setFields">Reset</v-btn>
-      <v-btn flat height="32" width="72" color="success" @click="saveMetadata">
+      <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
+      <v-btn flat height="32" width="72" color="btn-save" @click="saveMetadata">
         <span v-if="!saving && !saved">Save</span>
         <v-progress-circular 
           v-if="saving && !saved" 

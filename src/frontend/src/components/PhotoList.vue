@@ -1,12 +1,12 @@
 <template>
-  <v-navigation-drawer color="primary-darken-3" width="290" permanent>
+  <v-navigation-drawer color="divider" width="290" permanent>
     <v-list density="compact" height="100%">
       <v-list-subheader>
-        Photo List ({{photos.length}} item{{photos.length == 1 ? '' : 's'}})
+        <span>Photo List ({{photos.length}} item{{photos.length == 1 ? '' : 's'}})</span>
         <v-progress-circular 
           v-if="loadingMetadata" 
           indeterminate 
-          color="primary" 
+          color="list-load" 
           :size="15" 
           :width="3" 
           class="ml-2">
@@ -16,7 +16,7 @@
         v-for="(photo, i) in photos"
         :key="photo.name"
         :value="i"
-        active-color="primary"
+        active-color="img-name"
         @click="itemClicked(i)">
         <v-list-item-title v-text="photo.name"></v-list-item-title>
         <v-spacer></v-spacer>
