@@ -23,15 +23,16 @@ const lightTheme = {
     'img-name': '#3f51b5',
     'btn-save': '#4CAF50',
     'resolution': '#757575',
-    'list-load': '#3f51b5'
+    'list-load': '#3f51b5',
+    header: '#3f51b5'
   }
 }
 
 const darkTheme = {
   dark: true,
   colors: {
-    background: '#121212',
-    surface: '#212121',
+    background: '#0e0e10',
+    surface: '#1f1f23',
     primary: '#1565C0',
     'primary-darken-1': '#0D47A1',
     error: '#B00020',
@@ -40,7 +41,8 @@ const darkTheme = {
     'img-name': '#42A5F5',
     'btn-save': '#43A047',
     'resolution': '#BDBDBD',
-    'list-load': '#1E88E5'
+    'list-load': '#1E88E5',
+    header: '#18181b'
   }
 }
 

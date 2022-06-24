@@ -5,12 +5,14 @@
 <script>
 /* eslint-disable */
 import axios from 'axios'
+import { useTheme } from 'vuetify'
 
 export default {
   name: 'BingMap',
   props: ['coordinates'],
   data: () => ({
     map: 'undefined',
+    theme: useTheme(),
   }),
   created: function() {
     // Global callback function for Bing maps api response
@@ -32,10 +34,11 @@ export default {
   },
   methods: {
     InitMap: function() {
+      const mode = this.theme.global.name === 'lightTheme' ? Microsoft.Maps.MapTypeId.road : Microsoft.Maps.MapTypeId.aerial;
       const center = new Microsoft.Maps.Location(this.$props.coordinates.latitude, this.$props.coordinates.longitude);
       const mapElement = this.$refs.map;
       this.map = new Microsoft.Maps.Map(mapElement, {
-        mapTypeId: Microsoft.Maps.MapTypeId.road,
+        mapTypeId: mode,
         zoom: 10,
         maxZoom: 21,
         center: center,
@@ -43,7 +46,9 @@ export default {
         enableClickableLogo: false,
         showLocateMeButton: false,
         showTrafficButton: false,
-        showZoomButtons: false
+        showZoomButtons: false,
+        disableStreetside: true,
+        supportedMapTypes: [Microsoft.Maps.MapTypeId.road, Microsoft.Maps.MapTypeId.aerial]
       });
       this.map.entities.push(new Microsoft.Maps.Pushpin(center));
       Microsoft.Maps.Events.addHandler(this.map, 'click', this.handleMapClick);

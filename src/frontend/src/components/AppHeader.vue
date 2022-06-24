@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar height="56" elevation="1" color="primary" class="pr-1">
+  <v-app-bar height="56" elevation="1" color="header" class="pr-1">
     <v-app-bar-title>Photo Metadata Updater</v-app-bar-title>
     <v-text-field 
       class="mt-9"
@@ -13,19 +13,16 @@
     <v-btn @click="updateDirectory">Fetch</v-btn>
     <template v-slot:append>
       <v-btn id="menu-activator" icon="mdi-dots-vertical"></v-btn>
-      <v-menu activator="#menu-activator" location="bottom" :close-on-content-click="close">
-        <v-card width="250" max-width="250" style="margin-left: -210px">
-          <v-list class="pa-0">
-            <v-list-item>
-              <v-switch 
-                v-model="themeSwitch" 
-                @click="toggleTheme" 
-                color="img-name" 
-                label="Dark Theme" 
-                hide-details>
-              </v-switch>
-            </v-list-item>
-          </v-list>
+      <v-menu activator="#menu-activator" location="bottom" :close-on-content-click="close" transition="slide-y-transition">
+        <v-card width="375" max-width="375" style="margin-left: -340px" class="pl-4">
+          <v-switch 
+            v-for="toggle in options.values()" v-bind:key="toggle.label"
+            v-model="toggle.state" 
+            @click="toggle.click" 
+            :label="toggle.label" 
+            color="img-name"
+            hide-details>
+          </v-switch>
         </v-card>
       </v-menu>
     </template>
@@ -38,9 +35,18 @@ export default {
   name: 'AppHeader',
   emits: ["directory"],
   created() {
-    const theme = localStorage.getItem("photo-metadata-theme");
-    this.themeSwitch = theme === 'dark';
-    this.theme.global.name = this.themeSwitch ? 'darkTheme' : 'lightTheme';
+    // Set theme state from local storage
+    const themeOption = localStorage.getItem("photo-metadata-theme") === "dark";
+    this.options.set('theme', {...this.options.get('theme'), state: themeOption})
+    this.theme.global.name = themeOption ? 'darkTheme' : 'lightTheme';
+
+    // Set show save warning state from local storage
+    const saveOption = localStorage.getItem("photo-metadata-warning") === "false" ? false : true;
+    this.options.set('save', {...this.options.get('save'), state: saveOption})
+
+    // Set show exit warning state from local storage
+    const exitOption = localStorage.getItem("photo-metadata-exit") === "false" ? false : true;
+    this.options.set('exit', {...this.options.get('exit'), state: exitOption})
   },
   methods: {
     updateDirectory: function() {
@@ -51,16 +57,26 @@ export default {
       this.$emit('directory', this.directory);
     },
     toggleTheme: function() {
-      this.theme.global.name = this.themeSwitch ? 'lightTheme' : 'darkTheme';
-      localStorage.setItem("photo-metadata-theme", this.themeSwitch ? "light" : "dark");
+      this.theme.global.name = this.options.get('theme').state ? 'lightTheme' : 'darkTheme';
+      localStorage.setItem("photo-metadata-theme", this.options.get('theme').state ? "light" : "dark");
+    },
+    toggleSaveWarning: function() {
+      localStorage.setItem("photo-metadata-warning", this.options.get('save').state ? "false" : "true")
+    },
+    toggleExitWarning: function() {
+      localStorage.setItem("photo-metadata-exit", this.options.get('exit').state ? "false" : "true")
     }
   },
   data () {
     return {
+      theme: useTheme(),
       directory: '',
       close: false,
-      themeSwitch: false,
-      theme: useTheme()
+      options: new Map([
+        ['theme', {label: "Dark mode", click: this.toggleTheme, state: false}],
+        ['save', {label: "Show warning before saving", click: this.toggleSaveWarning, state: true}],
+        ['exit', {label: "Leaving page with unsaved data warning", click: this.toggleExitWarning, state: true}],
+      ])
     }
   }
 }
