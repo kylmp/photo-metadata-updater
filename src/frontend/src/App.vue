@@ -1,45 +1,33 @@
 <template>
   <v-app>
-    <AppHeader @directory="directoryUpdated"></AppHeader>
-    <PhotoList :directory="directory" @selected-photo="onPhotoSelected"></PhotoList>
-    <v-main>
-      <AppBody :photo="selectedPhoto" :directory="directory"></AppBody>
-    </v-main>
-    <AlertBox ref="alert"></AlertBox>
+    <AppHeader></AppHeader>
+    <AppSideNav></AppSideNav>
+    <AppBody></AppBody>
+    <GlobalAlert ref="alert"></GlobalAlert>
   </v-app>
 </template>
 
 <script>
 import AppHeader from './components/AppHeader.vue';
 import AppBody from './components/AppBody.vue';
-import PhotoList from './components/PhotoList.vue';
-import AlertBox from './components/Alert.vue';
+import AppSideNav from './components/AppSideNav.vue';
+import GlobalAlert from './components/global-components/Alert.vue';
+import { useAlertStore } from './stores/alertStore';
 
 export default {
   name: 'App',
   components: {
     AppHeader,
     AppBody,
-    PhotoList,
-    AlertBox
+    AppSideNav,
+    GlobalAlert
+  },
+  setup() {
+    const alertStore = useAlertStore();
+    return { alertStore };
   },
   mounted() {
-    this.$root.alert = this.$refs.alert
+    this.alertStore.update(this.$refs.alert);
   },
-  methods: {
-    onPhotoSelected (value) {
-      this.selectedPhoto = value;
-    },
-    directoryUpdated (dir) {
-      this.directory = {dir: dir, time: Date.now()};
-    }
-  },
-  data: () => ({
-    selectedPhoto: {},
-    directory: {},
-  }),
 }
 </script>
-
-<style>
-</style>

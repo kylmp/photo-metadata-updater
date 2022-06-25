@@ -101,107 +101,120 @@
 </template>
 
 <script>
+import { ref, watch } from 'vue'
 import axios from 'axios'
+import { useCoordinatesStore } from '../../stores/coordinatesStore'
+import { useAlertStore } from '../../stores/alertStore'
 
 export default {
-  name: 'MetadataDetails',
-  props: ['metadata', 'coordinates'],
-  created() {
-    this.setFields();
-  },
-  watch: { 
-    metadata: function() { 
-      this.setFields();
-    },
-    coordinates: function(newCoordinates) { 
-      this.latitude = newCoordinates.latitude;
-      this.longitude = newCoordinates.longitude;
-      this.ensureValidCoordinates();
-    }
-  },
-  data: () => ({
-    saving: false,
-    saved: false,
-    valid: true,
-    elevation: '',
-    elevationRules: [
+  name: 'MetadataDisplay',
+  props: ['metadata'],
+  setup(props) {
+    const coordinatesStore = useCoordinatesStore();
+    const alertStore = useAlertStore();
+    const form = ref(null);
+    const saving = ref(false);
+    const saved = ref(false);
+    const valid = ref(true);
+    const elevation = ref('');
+    const elevationRules = ref([
       v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)[Mm]?$/.test(v) || 'Elevation must be a +/- decimal number',
-    ],
-    longitude: '',
-    longitudeRules: [
+    ]);
+    const longitude = ref('');
+    const longitudeRules = ref([
       v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Longitude must be a +/- decimal number',
-    ],
-    latitude: '',
-    latitudeRules: [
+      v => v <= 180 && v >= -180 || 'Longitude should be between -180 to 180',
+    ]);
+    const latitude = ref('');
+    const latitudeRules = ref([
       v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Latitude must be a +/- decimal number',
-    ],
-    createDate: '',
-    createDateRules: [
+      v => v <= 90 && v >= -90 || 'Latitude should be between -90 to 90',
+    ]);
+    const createDate = ref('');
+    const createDateRules = ref([
       v => /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(v) || 'Create date format must be YYYY-MM-DD',
-    ],
-    createTime: '',
-    createTimeRules: [
+    ]);
+    const createTime = ref('');
+    const createTimeRules = ref([
       v => /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/.test(v) || 'Create time format must be HH:MM:SS',
-    ],
-    camera: '',
-    cameraRules: [
+    ]);
+    const camera = ref('');
+    const cameraRules = ref([
       v => !!v || 'Camera is required',
       v => (v && v.length <= 100) || 'Camera must be less than 100 characters',
-    ],
-  }),
-  methods: {
-    coordinatesUpdate () {
-      this.ensureValidCoordinates();
-      this.$emit('update:coordinates', {"latitude": this.latitude, "longitude": this.longitude});
-    },
-    ensureValidCoordinates() {
-      this.latitude = (this.latitude > 90) ? 90 : this.latitude;
-      this.latitude = (this.latitude < -90) ? -90 : this.latitude;
-      this.longitude = (this.longitude > 180) ? 180 : this.longitude;
-      this.longitude = (this.longitude < -180) ? -180 : this.longitude;
-    },
-    isGeotagged() {
-      return this.longitude !== 0 || this.latitude !== 0;
-    },
-    setFields() {
-      this.elevation = this.$props.metadata.elevation;
-      this.longitude = this.$props.metadata.coordinates.longitude;
-      this.latitude = this.$props.metadata.coordinates.latitude;
-      this.createDate = this.$props.metadata.createDate;
-      this.createTime = this.$props.metadata.createTime;
-      this.camera = this.$props.metadata.camera;
-      this.coordinatesUpdate();
-    },
-    async saveMetadata() {
-      this.saving = true;
-      const result = await this.$refs.form.validate();
+    ]);
+
+    const ensureValidCoordinates = () => {
+      latitude.value = (latitude.value > 90) ? 90 : latitude.value;
+      latitude.value = (latitude.value < -90) ? -90 : latitude.value;
+      longitude.value = (longitude.value > 180) ? 180 : longitude.value;
+      longitude.value = (longitude.value < -180) ? -180 : longitude.value;
+    }
+
+    const coordinatesUpdate = () => {
+      ensureValidCoordinates();
+      coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
+    }
+
+    const setFields = () => {
+      elevation.value = props.metadata.elevation;
+      longitude.value = props.metadata.coordinates.longitude;
+      latitude.value = props.metadata.coordinates.latitude;
+      createDate.value = props.metadata.createDate;
+      createTime.value = props.metadata.createTime;
+      camera.value = props.metadata.camera;
+      coordinatesUpdate();
+    }
+
+    const saveMetadata = async () => {
+      saving.value = true;
+      const result = await form.value.validate();
       if (result.valid === true) {
         const updatedData = {
-          "file": this.$props.metadata.path,
-          "date": this.createDate,
-          "time": this.createTime,
-          "camera": this.camera,
-          "elevation": this.elevation,
-          "latitude": this.latitude,
-          "longitude": this.longitude
+          "file": props.metadata.path,
+          "date": createDate.value,
+          "time": createTime.value,
+          "camera": camera.value,
+          "elevation": elevation.value,
+          "latitude": latitude.value,
+          "longitude": longitude.value
         }
         axios.post('/api/photo', updatedData).then(() => {
-          this.saving = false;
-          this.saved = true;
-          setTimeout(() => { this.saved = false; }, 3000);
-          this.$root.alert.success({message: "Photo updated", timeout: 3000})
+          saving.value = false;
+          saved.value = true;
+          setTimeout(() => { saved.value = false; }, 3000);
+          alertStore.alert.success({message: "Photo updated", timeout: 3000})
         }).catch(err => {
-          this.$root.alert.error(err);
-          this.saving = false;
+          alertStore.alert.error(err);
+          saving.value = false;
         })
       }
       else {
-        this.saving = false;
+        saving.value = false;
         const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
-        this.$root.alert.error({message: errorString, timeout: 10000});
+        alertStore.alert.error({message: errorString, timeout: 10000});
       }
     }
-  }
+
+    setFields();
+
+    watch(() => props.metadata, () => {
+      setFields();
+    });
+
+    coordinatesStore.$subscribe((mutation, state) => {
+      latitude.value = state.coordinates.lat;
+      longitude.value = state.coordinates.lon;
+      ensureValidCoordinates();
+    });
+
+    return {
+      form, valid, saved, saving, 
+      elevation, elevationRules, latitude, latitudeRules, longitude, longitudeRules, 
+      camera, cameraRules, createDate, createDateRules, createTime, createTimeRules, 
+      coordinatesUpdate, setFields, saveMetadata
+    }
+  },
 }
 </script>
 

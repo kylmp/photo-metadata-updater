@@ -6,9 +6,11 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { loadFonts } from './plugins/webfontloader'
 import "@mdi/font/css/materialdesignicons.css";
+import { createPinia } from 'pinia'
 
 loadFonts()
 
+const pinia = createPinia()
 const app = createApp(App);
 
 const lightTheme = {
@@ -58,5 +60,6 @@ const vuetify = createVuetify({
   }
 })
 
+app.use(pinia)
 app.use(vuetify)
 app.mount('#app')

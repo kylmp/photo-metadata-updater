@@ -17,6 +17,7 @@ module.exports = {
   },
 
   isValidCoordinates: function (lat, lon) {
-    return typeof lat == 'number' && typeof lon == 'number' && lat <= 90 && lat >= -90 && lon <= 180 && lon >= -180;
+    const coordinatesRegex = /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/;
+    return coordinatesRegex.test(lat) && coordinatesRegex.test(lon) && lat <= 90 && lat >= -90 && lon <= 180 && lon >= -180;
   }
 }

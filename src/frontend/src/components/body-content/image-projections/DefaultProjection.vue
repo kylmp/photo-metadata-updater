@@ -3,17 +3,20 @@
 </template>
 
 <script>
+import { ref, watch } from 'vue'
+
 export default {
   name: 'DefaultImage',
   props: ['photoName'],
-  watch: { 
-    photoName: function(newPhoto) {
-      this.source = `img/${newPhoto}`
-    }
+  setup(props) {
+    const source = ref('');
+
+    watch(() => props.photoName, (newPhoto) => {
+      source.value = `img/${newPhoto}`;
+    });
+
+    return { source };
   },
-  data: () => ({
-    source: '',
-  })
 }
 </script>
 

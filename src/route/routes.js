@@ -69,13 +69,21 @@ router.post('/photo', async function (req, res) {
   }
 });
 
-router.get('/bing-api-key', async function (req, res) {
-  const apiKey = process.env.BING_API_KEY || '';
+router.get('/maps-api-key', async function (req, res) {
+  const apiProvider = req.query.provider || process.env.MAPS_API || 'BING';
+  let apiKey = '';
+  switch (apiProvider.toUpperCase()) {
+    case 'GOOGLE':
+      apiKey = process.env.GOOGLE_API_KEY || '';
+      break;
+    default:
+      apiKey = process.env.BING_API_KEY || '';
+  }
   if (apiKey !== '') {
-    res.status(200).send(apiKey);
+    res.status(200).send({'provider': apiProvider.toUpperCase(), 'key': apiKey});
   }
   else {
-    res.status(400).send('No BING_API_KEY in .env file!');
+    res.status(400).send('No maps API key for '+apiProvider+' in .env file!');
   }
 })
 

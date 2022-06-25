@@ -4,28 +4,28 @@
 
 <script>
 /* eslint-disable */
+import { ref, watch } from 'vue'
+
 export default {
   name: 'EquirectangularImage',
   props: ['photoName'],
-  data: () => ({
-    pano: 'undefined',
-  }),
-  watch: { 
-    photoName: async function(newPhoto) { 
-      if (this.pano !== 'undefined') {
-        this.pano.destroy();
+  setup(props) {
+    const pano = ref('undefined');
+
+    watch(() => props.photoName, (newPhoto) => {
+      if (pano.value !== 'undefined') {
+        pano.value.destroy();
       }
-      this.pano = pannellum.viewer('panorama', {
+      pano.value = pannellum.viewer('panorama', {
         "type": "equirectangular",
         "panorama": "img/"+newPhoto,
         "showZoomCtrl": false,
         "autoRotate": -10,
         "autoLoad": true
       });
-    }
-  }
+    });
+
+    return { pano };
+  },
 }
 </script>
-
-<style scoped>
-</style>

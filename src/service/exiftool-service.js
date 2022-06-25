@@ -1,19 +1,24 @@
 const shell = require('shelljs');
 const asyncShell = require('../utils/async-shell');
 const coordinatesUtils = require('../utils/coordinates-utils');
+const datetimeUtils = require('../utils/datetime-utils');
 
 const exiftool = process.env.EXIFTOOL_PATH || 'exiftool';
+const options = '-overwrite_original -q -q';
 
 module.exports = {
 	setGeotag: function(file, lat, lon) {
 		if (coordinatesUtils.isValidCoordinates(lat, lon)) {
 			let latRef = (lat < 0) ? 'S' : 'N';
 			let lonRef = (lon < 0) ? 'W' : 'E';
-			let cmd = `${exiftool} "${file}" -gpslatitude=${lat}  -gpslongitude=${lon} -gpslatituderef=${latRef} -gpslongituderef=${lonRef} -overwrite_original -q -q`;
-			if (shell.exec(cmd).code === 0) {
+			let cmd = `${exiftool} "${file}" -gpslatitude=${lat}  -gpslongitude=${lon} -gpslatituderef=${latRef} -gpslongituderef=${lonRef} ${options}`;
+      if (shell.exec(cmd).code === 0) {
 				return true;
 			}
 		}
+    else {
+      console.log('invalid coordinates')
+    }
 		return false;
 	},
 
@@ -21,7 +26,7 @@ module.exports = {
   setDateTime: function(file, date, time) {
     if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(date) && /[0-9]{2}:[0-9]{2}:[0-9]{2}/.test(time)) {
       const datetime = `${date.replaceAll("-", ":")} ${time}`;
-      const cmd = `${exiftool} "${file}" -datetimeoriginal="${datetime}" -createdate="${datetime}" -overwrite_original -q -q`;
+      const cmd = `${exiftool} "${file}" -datetimeoriginal="${datetime}" -createdate="${datetime}" ${options}`;
       if (shell.exec(cmd).code === 0) {
         return true;
       }
@@ -30,7 +35,7 @@ module.exports = {
   },
 
   setCamera: function(file, camera) {
-    const cmd = `${exiftool} "${file}" -model="${camera}" -overwrite_original -q -q`;
+    const cmd = `${exiftool} "${file}" -model="${camera}" ${options}`;
     if (shell.exec(cmd).code === 0) {
       return true;
     }
@@ -42,48 +47,36 @@ module.exports = {
     elevation = elevation.replaceAll('m', '');
     elevation = elevation.replaceAll('M', '');
     const formattedElevation = `${elevation} m ${direction}`;
-    const cmd = `${exiftool} "${file}" -gpsaltitude=="${formattedElevation}" -overwrite_original -q -q`;
+    const cmd = `${exiftool} "${file}" -gpsaltitude=="${formattedElevation}" ${options}`;
     if (shell.exec(cmd).code === 0) {
       return true;
     }
     return false;
   },
 
-	getMetaData: async function(file) {
-		let infoMap = new Map();
-		let data = await asyncShell.exec(`${exiftool} "${file}"`).catch(err => {throw err});
-		data.split(/\r?\n/).forEach((item) => {
-			let tmp = item.split(': ');
-			infoMap.set(tmp[0].trim(), tmp[1]);
-		});
-    const {date, time} = extractDateTime(infoMap.get('Create Date'));
-		let res = { 
-			'name': infoMap.get('File Name') || 'unknown', 
-			'path': file,
-			'type': infoMap.get('File Type') || 'unknown',
-			'size': infoMap.get('File Size') || 'unknown',
-			'camera': infoMap.get('Camera Model Name') || 'unknown',
-			'createDate': date,
+  getMetaData: async function(file) {
+    let exifDataMap = new Map();
+    const data = await asyncShell.exec(`${exiftool} "${file}"`).catch(err => {throw err});
+    data.split(/\r?\n/).forEach((line) => {
+      let exifLine = line.split(': ');
+      exifDataMap.set(exifLine[0].trim(), exifLine[1]);
+    });
+    const datetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || "1970:01:01 00:00:00";
+    const {date, time} = datetimeUtils.dateTimeToFormattedObj(datetime);
+    let res = { 
+      'name': exifDataMap.get('File Name') || 'unknown', 
+      'path': file,
+      'size': exifDataMap.get('File Size') || 'unknown',
+      'camera': exifDataMap.get('Camera Model Name') || 'unknown',
+      'createDate': date,
       'createTime': time,
-			'resolution': infoMap.get('Image Size') || 'unknown',
-			'projection': infoMap.get('Projection Type') || 'unknown',
-			'coordinates': coordinatesUtils.geotagToCoordinates(infoMap.get('GPS Position')),
-      'elevation': mapElevation(infoMap.get('GPS Altitude') || '0 m Above') 
-		};
-		res.isGeotagged = (res.coordinates.latitude === 0 && res.coordinates.longitude === 0) ? false : true;
-		res.isHdr = res.name.includes("HDR");
-		return res;
-	}
-}
-
-function extractDateTime(created) {
-  if (created === undefined) {
-    return {"date": "1970-01-01", "time": "00:00:00"};
-  }
-  let split = created.split(" ");
-  return {
-    "date": split[0].replaceAll(":", "-"),
-    "time": split[1]
+      'resolution': exifDataMap.get('Image Size') || 'unknown',
+      'projection': exifDataMap.get('Projection Type') || 'unknown',
+      'coordinates': coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position')),
+      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') 
+    };
+    res.isGeotagged = (res.coordinates.latitude !== 0 && res.coordinates.longitude !== 0);
+    return res;
   }
 }
 
