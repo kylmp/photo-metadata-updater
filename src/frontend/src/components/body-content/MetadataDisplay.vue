@@ -10,15 +10,15 @@
     <v-col cols="12" md="4" class="text-right">
       <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
       <v-btn flat height="32" width="72" color="btn-save" @click="saveMetadata">
-        <span v-if="!saving && !saved">Save</span>
+        <span v-if="!saving && !saveComplete">Save</span>
         <v-progress-circular 
-          v-if="saving && !saved" 
+          v-if="saving && !saveComplete" 
           indeterminate 
           color="green-lighten-4" 
           :size="15" 
           :width="3">
         </v-progress-circular>
-        <v-icon v-if="!saving && saved" size="large" color="green-lighten-4">mdi-check-bold</v-icon>
+        <v-icon v-if="!saving && saveComplete" size="large" color="green-lighten-4">mdi-check-bold</v-icon>
       </v-btn>
     </v-col>
   </v-row>
@@ -28,7 +28,7 @@
         <v-col cols="12" md="4">
           <!-- TODO: Update to use date picker when released in vuetify v3.1 -->
           <v-text-field
-            label="Date (YYYY-MM-DD)"
+            label="Local Date (YYYY-MM-DD)"
             placeholder="YYYY-MM-DD"
             v-model="createDate"
             :rules="createDateRules"
@@ -40,7 +40,7 @@
         <v-col cols="12" md="4">
           <!-- TODO: Update to use time picker when released in vuetify v3.1 -->
           <v-text-field
-            label="Time (HH:MM:SS)"
+            label="Local Time (HH:MM:SS)"
             placeholder="HH:MM:SS"
             v-model="createTime"
             :rules="createTimeRules"
@@ -51,14 +51,24 @@
         </v-col>
         <v-col cols="12" md="4">
           <v-text-field
-            label="Camera Model"
-            placeholder="Camera Model"
-            v-model="camera"
-            :rules="cameraRules"
+            label="Timezone Offset (+/-HHMM)"
+            placeholder="+0000"
+            v-model="offset"
+            :rules="offsetRules"
             variant="outlined"
             density="compact"
             hide-details="true"
-          ></v-text-field>
+          >
+          <template v-slot:append>
+            <div class="tooltip" v-if="!gettingTimezone">
+              <v-icon @click="calculateTimezone">mdi-magnify</v-icon>
+              <span class="tooltiptext">Calculate timezone from coordinates</span>
+            </div>
+            <v-progress-circular 
+              v-if="gettingTimezone" indeterminate class="mr-1 ml-1 mt-1" :size="16" :width="3">
+            </v-progress-circular>
+          </template>
+          </v-text-field>
         </v-col>
         <v-col cols="12" md="4">
           <v-text-field
@@ -69,6 +79,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            suffix="m"
           ></v-text-field>
         </v-col>
         <v-col cols="12" md="4">
@@ -114,11 +125,12 @@ export default {
     const alertStore = useAlertStore();
     const form = ref(null);
     const saving = ref(false);
-    const saved = ref(false);
+    const saveComplete = ref(false);
+    const gettingTimezone = ref(false);
     const valid = ref(true);
     const elevation = ref('');
     const elevationRules = ref([
-      v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)[Mm]?$/.test(v) || 'Elevation must be a +/- decimal number',
+      v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Elevation must be a +/- decimal number',
     ]);
     const longitude = ref('');
     const longitudeRules = ref([
@@ -138,10 +150,9 @@ export default {
     const createTimeRules = ref([
       v => /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/.test(v) || 'Create time format must be HH:MM:SS',
     ]);
-    const camera = ref('');
-    const cameraRules = ref([
-      v => !!v || 'Camera is required',
-      v => (v && v.length <= 100) || 'Camera must be less than 100 characters',
+    const offset = ref('');
+    const offsetRules = ref([
+      v => /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
     ]);
 
     const ensureValidCoordinates = () => {
@@ -162,7 +173,7 @@ export default {
       latitude.value = props.metadata.coordinates.latitude;
       createDate.value = props.metadata.createDate;
       createTime.value = props.metadata.createTime;
-      camera.value = props.metadata.camera;
+      offset.value = props.metadata.tzOffset;
       coordinatesUpdate();
     }
 
@@ -174,15 +185,15 @@ export default {
           "file": props.metadata.path,
           "date": createDate.value,
           "time": createTime.value,
-          "camera": camera.value,
           "elevation": elevation.value,
           "latitude": latitude.value,
-          "longitude": longitude.value
+          "longitude": longitude.value,
+          "tzOffset": offset.value,
         }
         axios.post('/api/photo', updatedData).then(() => {
           saving.value = false;
-          saved.value = true;
-          setTimeout(() => { saved.value = false; }, 3000);
+          saveComplete.value = true;
+          setTimeout(() => { saveComplete.value = false; }, 3000);
           alertStore.alert.success({message: "Photo updated", timeout: 3000})
         }).catch(err => {
           alertStore.alert.error(err);
@@ -194,6 +205,19 @@ export default {
         const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
         alertStore.alert.error({message: errorString, timeout: 10000});
       }
+    }
+
+    const calculateTimezone = () => {
+      gettingTimezone.value = true;
+      const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
+      const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
+      axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
+        offset.value = res.data;
+        gettingTimezone.value = false;
+      }).catch(() => {
+        alertStore.alert.error(`Could not determine timezone`);
+        gettingTimezone.value = false;
+      });
     }
 
     setFields();
@@ -209,10 +233,10 @@ export default {
     });
 
     return {
-      form, valid, saved, saving, 
+      form, valid, saveComplete, saving, gettingTimezone, 
       elevation, elevationRules, latitude, latitudeRules, longitude, longitudeRules, 
-      camera, cameraRules, createDate, createDateRules, createTime, createTimeRules, 
-      coordinatesUpdate, setFields, saveMetadata
+      offset, offsetRules, createDate, createDateRules, createTime, createTimeRules, 
+      coordinatesUpdate, setFields, saveMetadata, calculateTimezone
     }
   },
 }
@@ -221,5 +245,32 @@ export default {
 <style scoped>
 .v-col-md-4 {
     height: 58px;
+}
+:deep(.v-input--horizontal .v-input__append) {
+  margin-left: 6px;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: #1f1f23bb;
+  color: #ddd;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  right: 120%;
+  margin-left: -60px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 </style>

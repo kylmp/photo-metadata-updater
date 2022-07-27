@@ -19,5 +19,9 @@ module.exports = {
   isValidCoordinates: function (lat, lon) {
     const coordinatesRegex = /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/;
     return coordinatesRegex.test(lat) && coordinatesRegex.test(lon) && lat <= 90 && lat >= -90 && lon <= 180 && lon >= -180;
+  },
+
+  isValidElevation: function (elevation) {
+    return /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(elevation);
   }
 }

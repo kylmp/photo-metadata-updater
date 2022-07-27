@@ -3,6 +3,9 @@ var router = express.Router();
 const shellSvc = require('../service/shell-service');
 const exifSvc = require('../service/exiftool-service');
 const imgFolder = require('../service/img-folder-service');
+const datetimeUtils = require('../utils/datetime-utils');
+const coordinatesUtils = require('../utils/coordinates-utils');
+const bingMapsApi = require('../service/bing-maps-api-service');
 
 // Get list of all photos in a directory (with metadata optional - long load times)
 // or get a single photo metadata by providing a file path
@@ -45,8 +48,9 @@ router.get('/photo-available', async function(req, res) {
   if (name) {
     imgFolder.isPhotoAvailable(name).then(result => {
       res.send(result);
-    })
-    .catch(err => { res.status(500).send({error: err.message}); });
+    }).catch(err => { 
+      res.status(500).send({error: err.message}); 
+    });
   }
   else {
     res.status(400).send('name query parameter required');
@@ -54,21 +58,33 @@ router.get('/photo-available', async function(req, res) {
 });
 
 // Update a photos metadata
-router.post('/photo', async function (req, res) {
-  let response = '';
-  const { file, longitude, latitude, elevation, date, time, camera } = req.body;
-	response += exifSvc.setGeotag(file, latitude, longitude) ? '' : 'Error updating coordinates, '
-  response += exifSvc.setDateTime(file, date, time) ? '' : 'Error updating create date and time, '
-  response += exifSvc.setCamera(file, camera) ? '' : 'Error updating camera, '
-  response += exifSvc.setElevation(file, elevation) ? '' : 'Error updating elevation, '
-	if (response === '') {
-		res.status(200).send("Updated");
-	}
+router.post('/photo', function (req, res) {
+  const metadata = req.body;
+  if (!datetimeUtils.isValidDate(metadata.date)) {
+    res.status(400).send('invalid date');
+  }
+  else if (!datetimeUtils.isValidTime(metadata.time)) {
+    res.status(400).send('invalid time');
+  }
+  else if (!datetimeUtils.isValidOffset(metadata.tzOffset)) {
+    res.status(400).send('invalid timezone offset');
+  }
+  else if (!coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {
+    res.status(400).send('invalid coordinates');
+  }
+  else if (!coordinatesUtils.isValidElevation(metadata.elevation)) {
+    res.status(400).send('invalid elevation');
+  }
   else {
-    res.status(500).send(response.slice(0, -2));
+    exifSvc.setMetadata(metadata).then((response) => {
+      res.status(200).send(response);
+    }).catch(err => {
+      res.status(500).send(err.message);
+    });
   }
 });
 
+// Get map provider API key
 router.get('/maps-api-key', async function (req, res) {
   const apiProvider = req.query.provider || process.env.MAPS_API || 'BING';
   let apiKey = '';
@@ -85,6 +101,31 @@ router.get('/maps-api-key', async function (req, res) {
   else {
     res.status(400).send('No maps API key for '+apiProvider+' in .env file!');
   }
-})
+});
+
+// Calculate timezone offset from coordinates and datetime info
+router.get('/calculate-timezone', async function (req, res) {
+  const long = req.query.lon;
+  const lati = req.query.lat;
+  const date = req.query.date;
+  const time = req.query.time;
+
+  if (!datetimeUtils.isValidDate(date)) {
+    res.status(400).send('invalid date');
+  }
+  else if (!datetimeUtils.isValidTime(time)) {
+    res.status(400).send('invalid time');
+  }
+  else if (!coordinatesUtils.isValidCoordinates(lati, long)) {
+    res.status(400).send('invalid coordinates');
+  }
+  else {
+    bingMapsApi.getTzOffsetFromCoordinates(lati, long, date, time).then(offset => {
+      res.status(200).send(datetimeUtils.encodeOffset(offset));
+    }).catch(err => {
+      res.status(500).send(err.message);
+    });
+  }
+});
 
 module.exports = router;

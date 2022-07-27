@@ -57,7 +57,7 @@ export default {
     }
 
     coordinatesStore.$subscribe((mutation, state) => {
-      if (map.value !== 'undefined') {
+      if (map.value) {
         map.value.entities.clear();
         const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
         map.value.setView({ center: center });
