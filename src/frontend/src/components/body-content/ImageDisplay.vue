@@ -19,11 +19,12 @@ import axios from 'axios';
 export default {
   name: 'ImageDisplay',
   props: ['projection', 'name'],
+  emits: ['error'],
   components: {
     EquirectangularImage,
     DefaultImage,
   },
-  setup(props) {
+  setup(props, { emit }) {
     const pollInterval = ref(100);
     const timeout = ref(30000);
     const isAvailable = ref(false);
@@ -34,7 +35,9 @@ export default {
       photoName.value = '';
       const start = Date.now();
       while (isAvailable.value === false || (Date.now() - start) >= timeout.value) {
-        isAvailable.value = await axios.get('/api/photo-available?name='+props.name);
+        isAvailable.value = await axios.get('/api/photo-available?name='+props.name).catch(() => {
+          emit('error');
+        });
         await wait();
       }
       photoName.value = props.name;

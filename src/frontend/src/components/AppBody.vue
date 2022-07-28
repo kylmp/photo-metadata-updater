@@ -8,7 +8,7 @@
       </v-row>
       <v-row class="pt-4 fill-height" justify="center">
         <v-col class="pr-0 mr-0">
-          <ImageDisplay :projection="metadata.projection" :name="metadata.name"></ImageDisplay>
+          <ImageDisplay :projection="metadata.projection" :name="metadata.name" @error="imageLoadError"></ImageDisplay>
         </v-col>
         <v-col>
           <MapDisplay></MapDisplay>
@@ -46,6 +46,11 @@ export default {
     const noImage = ref(true);
     const noImageType = ref('unselected');
 
+    const imageLoadError = () => {
+      noImage.value = true;
+      noImageType.value = 'error';
+    }
+
     // When directory changes, clear app body to unselect previous image
     directoryStore.$subscribe(() => {
       noImage.value = true;
@@ -65,7 +70,7 @@ export default {
       });
     });
 
-    return { metadata, noImage, noImageType };
+    return { metadata, noImage, noImageType, imageLoadError };
   },
 }
 </script>
