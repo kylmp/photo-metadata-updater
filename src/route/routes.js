@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const shellSvc = require('../service/shell-service');
+const directoryService = require('../service/photo-directory-service');
 const exifSvc = require('../service/exiftool-service');
 const imgFolder = require('../service/img-folder-service');
 const datetimeUtils = require('../utils/datetime-utils');
@@ -16,14 +16,14 @@ router.get('/photo', async function (req, res) {
   let isMetaData = req.query.metadata || false;
 	if (directory !== '') {
 		if (isMetaData) {
-			shellSvc.getPhotoListWithMetaData(directory, recursive).then(photos => {
+			directoryService.getPhotoListWithMetaData(directory, recursive).then(photos => {
 				res.send(photos);
 			}).catch(err => { 
         err.includes("No such file or directory") ? res.status(400).send() : res.status(500).send({error: err});
       });
 		}
 		else { 
-			shellSvc.getPhotoList(directory, recursive).then(photos => {
+			directoryService.getPhotoList(directory, recursive).then(photos => {
 				res.send(photos);
 			}).catch(err => { 
         err.includes("No such file or directory") ? res.status(400).send() : res.status(500).send({error: err});
@@ -31,7 +31,7 @@ router.get('/photo', async function (req, res) {
 		}
 	}
 	else if (file !== '') {
-    shellSvc.getPhotoMetaData(file).then(photo => {
+    directoryService.getPhotoMetaData(file).then(photo => {
       res.send(photo);
       imgFolder.movePhotoToImageFolder(file);
     }).catch(err => { 
@@ -43,6 +43,7 @@ router.get('/photo', async function (req, res) {
 	}
 });
 
+// Check if photo is available in the public folder
 router.get('/photo-available', async function(req, res) {
   let name = req.query.name || '';
   if (name) {
