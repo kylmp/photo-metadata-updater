@@ -7,6 +7,7 @@
 import { ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useCoordinatesStore } from '../../../stores/coordinatesStore';
+import { useOptionsStore } from '../../../stores/optionsStore';
 
 export default {
   name: 'BingMap',
@@ -14,6 +15,7 @@ export default {
   setup(props) {
     const theme = useTheme();
     const coordinatesStore = useCoordinatesStore();
+    const optionsStore = useOptionsStore();
     const map = ref();
 
     if (!props.apikey) {
@@ -63,6 +65,16 @@ export default {
         map.value.setView({ center: center });
         map.value.entities.push(new Microsoft.Maps.Pushpin(center));
       }
+    });
+
+    optionsStore.$subscribe((mutation, state)  => {
+      // Completely dispose/recreate the map, because Bing maps has bugs with map.value.setMapType()
+      let opts = map.value.getOptions();
+      const center = map.value.getCenter();
+      opts.mapTypeId = state.darkTheme ? Microsoft.Maps.MapTypeId.aerial : Microsoft.Maps.MapTypeId.road;
+      map.value = new Microsoft.Maps.Map(document.getElementById("map"), opts);
+      map.value.entities.push(new Microsoft.Maps.Pushpin(center));
+      Microsoft.Maps.Events.addHandler(map.value, 'click', handleMapClick);
     });
   }
 }
