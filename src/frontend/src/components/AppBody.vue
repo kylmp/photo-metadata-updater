@@ -62,7 +62,7 @@ export default {
       axios.get('/api/photo?file='+encodeURI(state.photo.path)).then(res => {
         metadata.value = res.data;
         noImage.value = false;
-        coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude);
+        coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude, true);
       })
       .catch((err) => { 
         noImage.value = true;
