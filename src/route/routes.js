@@ -32,8 +32,11 @@ router.get('/photo', async function (req, res) {
 	}
 	else if (file !== '') {
     directoryService.getPhotoMetaData(file).then(photo => {
-      res.send(photo);
-      imgFolder.movePhotoToImageFolder(file);
+      imgFolder.movePhotoToImageFolder(file).then(() => {
+        res.status(200).send(photo);
+      }).catch(err => {
+        res.status(500).send({error: err});
+      });
     }).catch(err => { 
       err.includes("File not found") ? res.status(400).send() : res.status(500).send({error: err});
     });
