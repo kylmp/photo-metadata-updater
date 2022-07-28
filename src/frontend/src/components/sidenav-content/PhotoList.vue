@@ -32,6 +32,7 @@ import { ref } from 'vue'
 import { useDirectoryStore } from '../../stores/directoryStore';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSelectedPhotoStore } from '../../stores/selectedPhotoStore';
+import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore';
 
 export default {
   name: 'PhotoList',
@@ -41,10 +42,24 @@ export default {
     const directoryStore = useDirectoryStore();
     const alertStore = useAlertStore();
     const selectedPhotoStore = useSelectedPhotoStore();
+    const geotaggedPhotoStore = useGeotaggedPhotoStore();
 
     directoryStore.$subscribe((mutation, state) => {
       updateList(state.directory);
     });
+
+    geotaggedPhotoStore.$subscribe((mutation, state) => {
+      let updateIndex = -1;
+      for (let i = 0; i < photos.value.length; i++) {
+        if (photos.value[i].name === state.name) {
+          updateIndex = i;
+          break;
+        }
+      }
+      if (updateIndex >= 0) {
+        photos.value[updateIndex].isGeotagged = true;
+      }
+    })
 
     const photoSelected = (index) => {
       const selected = photos.value[index];

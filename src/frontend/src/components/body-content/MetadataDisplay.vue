@@ -116,11 +116,13 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
+import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore'
 
 export default {
   name: 'MetadataDisplay',
   props: ['metadata'],
   setup(props) {
+    const geotaggedPhotoStore = useGeotaggedPhotoStore();
     const coordinatesStore = useCoordinatesStore();
     const alertStore = useAlertStore();
     const form = ref(null);
@@ -167,6 +169,12 @@ export default {
       coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
     }
 
+    const geotagPhoto = (name, lat, lon) => {
+      if (lat != '0' || lon != '0') {
+        geotaggedPhotoStore.update(name);
+      }
+    }
+
     const setFields = () => {
       elevation.value = props.metadata.elevation;
       longitude.value = props.metadata.coordinates.longitude;
@@ -193,6 +201,9 @@ export default {
         axios.post('/api/photo', updatedData).then(() => {
           saving.value = false;
           saveComplete.value = true;
+          if (!props.metadata.isGeotagged) {
+            geotagPhoto(props.metadata.name, latitude.value, longitude.value);
+          }
           setTimeout(() => { saveComplete.value = false; }, 3000);
           alertStore.alert.success({message: "Photo updated", timeout: 3000})
         }).catch(err => {
@@ -236,7 +247,7 @@ export default {
       form, valid, saveComplete, saving, gettingTimezone, 
       elevation, elevationRules, latitude, latitudeRules, longitude, longitudeRules, 
       offset, offsetRules, createDate, createDateRules, createTime, createTimeRules, 
-      coordinatesUpdate, setFields, saveMetadata, calculateTimezone
+      coordinatesUpdate, setFields, saveMetadata, calculateTimezone, geotagPhoto
     }
   },
 }
