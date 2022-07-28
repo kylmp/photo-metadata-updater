@@ -19,7 +19,7 @@ Ensure you have the following dependencies downloaded on your system:
 
 * [exiftool](https://exiftool.org/install.html) - Tool used to view and edit photo metadata
 * [Node.js](https://nodejs.org/en/download/) - Used to run the application
-* [Bing maps](https://docs.microsoft.com/en-us/bingmaps/v8-web-control/creating-and-hosting-map-controls/) - API key required (free)
+* [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) - Used for displaying map and timezone calculations
 
 # Build and Run Application
 
