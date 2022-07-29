@@ -9,7 +9,7 @@
     </v-col>
     <v-col cols="12" md="4" class="text-right">
       <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
-      <v-btn flat height="32" width="72" color="btn-save" @click="saveMetadata">
+      <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? {} : { click: saveMetadata }">
         <span v-if="!saving && !saveComplete">Save</span>
         <v-progress-circular 
           v-if="saving && !saveComplete" 
@@ -19,6 +19,18 @@
           :width="3">
         </v-progress-circular>
         <v-icon v-if="!saving && saveComplete" size="large" color="green-lighten-4">mdi-check-bold</v-icon>
+        <v-dialog v-model="dialog" activator="parent" v-if="saveWarningEnabled">
+          <v-card title="Confirm Save">
+            <v-card-text>
+              <b>Saving metadata cannot be undone</b><br>
+              It's recommended to make a backup of the photo before saving
+            </v-card-text>
+            <v-card-actions>
+              <v-btn flat @click="dialog = false">Exit</v-btn>
+              <v-btn color="primary" flat @click="saveMetadata">Confirm</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-btn>
     </v-col>
   </v-row>
@@ -26,7 +38,6 @@
     <v-container class="pa-0 ma-0">
       <v-row>
         <v-col cols="12" md="4">
-          <!-- TODO: Update to use date picker when released in vuetify v3.1 -->
           <v-text-field
             label="Local Date (YYYY-MM-DD)"
             placeholder="YYYY-MM-DD"
@@ -38,7 +49,6 @@
           ></v-text-field>
         </v-col>
         <v-col cols="12" md="4">
-          <!-- TODO: Update to use time picker when released in vuetify v3.1 -->
           <v-text-field
             label="Local Time (HH:MM:SS)"
             placeholder="HH:MM:SS"
@@ -62,7 +72,7 @@
           <template v-slot:append>
             <div class="tooltip" v-if="!gettingTimezone">
               <v-icon @click="calculateTimezone">mdi-magnify</v-icon>
-              <span class="tooltiptext">Calculate timezone from coordinates</span>
+              <span v-if="tooltipEnabled" class="tooltiptext">Calculate timezone from coordinates</span>
             </div>
             <v-progress-circular 
               v-if="gettingTimezone" indeterminate class="mr-1 ml-1 mt-1" :size="16" :width="3">
@@ -116,6 +126,7 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
+import { useOptionsStore } from '../../stores/optionsStore'
 import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore'
 
 export default {
@@ -125,10 +136,14 @@ export default {
     const geotaggedPhotoStore = useGeotaggedPhotoStore();
     const coordinatesStore = useCoordinatesStore();
     const alertStore = useAlertStore();
+    const optionsStore = useOptionsStore();
     const form = ref(null);
     const saving = ref(false);
     const saveComplete = ref(false);
     const gettingTimezone = ref(false);
+    const tooltipEnabled = ref(optionsStore.showTooltip);
+    const saveWarningEnabled = ref(optionsStore.saveWarning);
+    const dialog = ref(false);
     const valid = ref(true);
     const elevation = ref('');
     const elevationRules = ref([
@@ -186,6 +201,7 @@ export default {
     }
 
     const saveMetadata = async () => {
+      dialog.value = false;
       saving.value = true;
       const result = await form.value.validate();
       if (result.valid === true) {
@@ -243,11 +259,17 @@ export default {
       ensureValidCoordinates();
     });
 
+    optionsStore.$subscribe((mutation, state) => {
+      tooltipEnabled.value = state.showTooltip;
+      saveWarningEnabled.value = state.saveWarning;
+    });
+
     return {
-      form, valid, saveComplete, saving, gettingTimezone, 
+      form, valid, saveComplete, saving, gettingTimezone, dialog,
       elevation, elevationRules, latitude, latitudeRules, longitude, longitudeRules, 
       offset, offsetRules, createDate, createDateRules, createTime, createTimeRules, 
-      coordinatesUpdate, setFields, saveMetadata, calculateTimezone, geotagPhoto
+      coordinatesUpdate, setFields, saveMetadata, calculateTimezone, geotagPhoto,
+      tooltipEnabled, saveWarningEnabled
     }
   },
 }

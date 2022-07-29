@@ -1,6 +1,6 @@
 <template>
   <v-btn id="menu-activator" icon="mdi-dots-vertical"></v-btn>
-  <v-menu activator="#menu-activator" location="bottom" :close-on-content-click="close" transition="slide-y-transition">
+  <v-menu open-on-hover activator="#menu-activator" location="bottom" :close-on-content-click="close" transition="slide-y-transition">
     <v-card width="375" max-width="375" style="margin-left: -330px" class="pl-4">
       <v-switch 
         v-for="toggle in options.values()" v-bind:key="toggle.label"
@@ -37,15 +37,15 @@ export default {
       optionsStore.toggleSaveWarning();
     }
 
-    const toggleExitWarning = () => {
-      localStorage.setItem("photo-metadata-exit", options.value.get('exit').state ? "false" : "true")
-      optionsStore.toggleExitWarning();
+    const toggleTooltip = () => {
+      localStorage.setItem("photo-metadata-tooltip", options.value.get('tooltip').state ? "false" : "true")
+      optionsStore.toggleTooltip();
     }
 
     const options = ref(new Map([
       ['theme', {label: "Dark mode", click: toggleTheme, state: false}],
-      ['save', {label: "Show warning before saving", click: toggleSaveWarning, state: true}],
-      ['exit', {label: "Leaving page with unsaved data warning", click: toggleExitWarning, state: true}],
+      ['save', {label: "Show warning before saving a photo", click: toggleSaveWarning, state: true}],
+      ['tooltip', {label: "Show calculate timezone tooltip", click: toggleTooltip, state: true}],
     ]));
 
     // Set theme state from local storage
@@ -59,12 +59,12 @@ export default {
     options.value.set('save', {...options.value.get('save'), state: saveOption});
     optionsStore.setSaveWarning(saveOption);
 
-    // Set exit warning state from local storage
-    const exitOption = localStorage.getItem("photo-metadata-exit") === "false" ? false : true;
-    options.value.set('exit', {...options.value.get('exit'), state: exitOption});
-    optionsStore.setExitWarning(exitOption);
+    // Set tooltip enabled state from local storage
+    const tooltipOption = localStorage.getItem("photo-metadata-tooltip") === "false" ? false : true;
+    options.value.set('tooltip', {...options.value.get('tooltip'), state: tooltipOption});
+    optionsStore.setTooltip(tooltipOption);
 
-    return { close, options, toggleTheme, toggleSaveWarning, toggleExitWarning }
+    return { close, options }
   }
 }
 </script>
