@@ -1,5 +1,5 @@
 <template>
-<v-list density="compact" height="100%">
+<v-list density="compact" height="100%" v-model:selected="selection">
   <v-list-subheader>
     <span>Photo List ({{photos.length}} item{{photos.length == 1 ? '' : 's'}})</span>
     <v-progress-circular 
@@ -38,6 +38,7 @@ export default {
   name: 'PhotoList',
   setup() {
     const photos = ref([]);
+    const selection = ref([]);
     const loadingMetadata = ref(false);
     const directoryStore = useDirectoryStore();
     const alertStore = useAlertStore();
@@ -67,6 +68,7 @@ export default {
     }
 
     const updateList = async (directoryPath) => {
+			selection.value = [];
       loadingMetadata.value = true;
       // Get photo list names & paths (fast)
       axios
@@ -100,6 +102,7 @@ export default {
     return { 
       photos,
       loadingMetadata,
+			selection,
       photoSelected
     }
   },
