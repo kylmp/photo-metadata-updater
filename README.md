@@ -32,8 +32,8 @@ Ensure you have the following dependencies downloaded on your system:
 3. From the root directory create a file called `.env`
     - Add the following properties:
 ```
-BING_API_KEY={your API key}
-EXIFTOOL_PATH={/path/to/exiftool}
+BING_API_KEY=YOUR_API_KEY
+EXIFTOOL_PATH=/path/to/exiftool
 ```
 * EXIFTOOL_PATH is optional and not needed if EXIFTOOL is accessable globally on your system
 
