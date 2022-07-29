@@ -24,8 +24,8 @@ Ensure you have the following dependencies downloaded on your system:
 # Build and Run Application
 
 ### Setup
-1. Clone this repo
-2. From the root directory of the cloned repo execute these commands:
+1. Clone this repo or [download a zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest)
+2. From the root directory of the cloned/extracted project directory, execute these commands:
     - `npm install` - Installs Nodejs dependencies
     - `npm run install-ui` - Installs the frontend dependencies
     - `npm run build-ui` - Builds/Compiles the frontend into the `public/` folder
