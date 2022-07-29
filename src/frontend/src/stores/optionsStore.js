@@ -5,7 +5,7 @@ export const useOptionsStore = defineStore('optionsStore', {
     return {
       darkTheme: false,
       saveWarning: true,
-      exitWarning: true,
+      showTooltip: true,
     }
   },
   actions: {
@@ -15,8 +15,8 @@ export const useOptionsStore = defineStore('optionsStore', {
     setSaveWarning(save) {
       this.saveWarning = save;
     },
-    setExitWarning(exit) {
-      this.exitWarning = exit;
+    setTooltip(tooltip) {
+      this.showTooltip = tooltip;
     },
     toggleDarkTheme() {
       this.darkTheme = !this.darkTheme;
@@ -24,8 +24,8 @@ export const useOptionsStore = defineStore('optionsStore', {
     toggleSaveWarning() {
       this.saveWarning = !this.saveWarning;
     },
-    toggleExitWarning() {
-      this.exitWarning = !this.exitWarning;
+    toggleTooltip() {
+      this.showTooltip = !this.showTooltip;
     }
   }
 }) 
