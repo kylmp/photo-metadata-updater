@@ -54,7 +54,11 @@ export default {
       showSnackbar.value = true
     }
 
-    return { color, timeout, showSnackbar, message, send, success, error };
+    const clear = () => {
+      showSnackbar.value = false;
+    }
+
+    return { color, timeout, showSnackbar, message, send, success, error, clear };
   },
 }
 </script>

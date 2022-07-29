@@ -1,7 +1,18 @@
 <template>
-  <v-btn id="menu-activator" icon="mdi-dots-vertical"></v-btn>
-  <v-menu open-on-hover activator="#menu-activator" location="bottom" :close-on-content-click="close" transition="slide-y-transition">
-    <v-card width="375" max-width="375" style="margin-left: -330px" class="pl-4">
+  <v-btn @click="optionsButtonClicked" id="menu-activator" icon="mdi-dots-vertical"></v-btn>
+  <v-menu 
+    v-model="menu" 
+    :close-on-content-click="close" 
+    activator="#menu-activator" 
+    location="bottom" 
+    transition="slide-y-transition">
+    <v-card 
+      width="375"
+      max-width="375"  
+      @mouseenter="menuEntered" 
+      @mouseleave="menuExited" 
+      style="margin-left: -330px" 
+      class="pl-4">
       <v-switch 
         v-for="toggle in options.values()" v-bind:key="toggle.label"
         v-model="toggle.state" 
@@ -18,13 +29,30 @@
 import { ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useOptionsStore } from '../../stores/optionsStore';
+import { useAlertStore } from '../../stores/alertStore';
 
 export default {
   name: 'OptionsMenu',
   setup() {
+    const menuExitTimeoutBeforeCloseInMs = 600;
+    const menu = ref(false);
     const close = ref(false);
     const theme = useTheme();
     const optionsStore = useOptionsStore();
+    const alertStore = useAlertStore();
+    const closeMenuTimeout = ref(null);
+
+    const optionsButtonClicked = () => {
+      alertStore.alert.clear()
+    }
+
+    const menuEntered = () => {
+      clearTimeout(closeMenuTimeout.value);
+    }
+
+    const menuExited = () => {
+      closeMenuTimeout.value = setTimeout(() => menu.value = false, menuExitTimeoutBeforeCloseInMs);
+    }
 
     const toggleTheme = () => {
       theme.global.name.value = options.value.get('theme').state ? 'lightTheme' : 'darkTheme';
@@ -64,7 +92,7 @@ export default {
     options.value.set('tooltip', {...options.value.get('tooltip'), state: tooltipOption});
     optionsStore.setTooltip(tooltipOption);
 
-    return { close, options }
+    return { menu, options, close, optionsButtonClicked, menuEntered, menuExited }
   }
 }
 </script>

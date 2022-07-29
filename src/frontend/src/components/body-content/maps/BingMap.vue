@@ -46,9 +46,14 @@ export default {
         center: center,
         maxNetworkLinkDepth: 3,
         enableClickableLogo: false,
+        showMapTypeSelector: false,
+        showBreadcrumb: false,
+        showDashboard: false,
         showLocateMeButton: false,
         showTrafficButton: false,
         showZoomButtons: false,
+        showScalebar: false,
+        showTermsLink: false,
         disableStreetside: true,
         supportedMapTypes: [Microsoft.Maps.MapTypeId.road, Microsoft.Maps.MapTypeId.aerial]
       });
