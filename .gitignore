@@ -12,7 +12,9 @@ demo.gif
 .env.template
 config.properties
 config.template.properties
+build/
 photo-metadata-updater/
 photo-metadata-updater.zip
 build.sh
 readme.txt
+exiftool/

@@ -1,10 +1,15 @@
 const shell = require('shelljs');
+const path = require('path');
 const asyncShell = require('../utils/async-shell');
 const coordinatesUtils = require('../utils/coordinates-utils');
 const datetimeUtils = require('../utils/datetime-utils');
 
-const exiftool = process.env.EXIFTOOL_PATH || 'exiftool';
 const options = '-overwrite_original -q -q';
+
+let exiftool = process.env.EXIFTOOL_PATH || 'exiftool';
+if (exiftool === 'exiftool/exiftool') {
+  exiftool = path.join(__dirname, `../../${process.env.EXIFTOOL_PATH}`);
+}
 
 module.exports = {
   getMetaData: async function(file) {
@@ -49,6 +54,10 @@ module.exports = {
       throw new Error('exiftool error');
     }
     return 'success';
+  },
+
+  isAvailable: function() {
+    return shell.exec(`${exiftool} -ver`, {silent: true}).code === 0;
   }
 }
 
