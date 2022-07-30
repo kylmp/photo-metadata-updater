@@ -24,23 +24,14 @@ Ensure you have the following dependencies downloaded on your system:
 # Build and Run Application
 
 ### Setup
-1. Clone this repo or [download a zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest)
-2. From the root directory of the cloned/extracted project directory, execute these commands:
-    - `npm install` - Installs Nodejs dependencies
-    - `npm run install-ui` - Installs the frontend dependencies
-    - `npm run build-ui` - Builds/Compiles the frontend into the `public/` folder
-3. From the root directory create a file called `.env`
-    - Add the following properties:
-```
-BING_API_KEY=YOUR_API_KEY
-EXIFTOOL_PATH=/path/to/exiftool
-```
-* EXIFTOOL_PATH is optional and not needed if EXIFTOOL is accessable globally on your system
-
+1. [Download zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater.zip)
+2. Extract the zip into a new project directory
+4. Open the `.env` file and add your bing API key, and update the exiftool path (if not globally accessable on your computer)
+ 
 ### Run application
-Use `npm start` from the project directory or use `node <path/to/photo-metadata-updater.js>` from any directory
+Run the command `node photo-metadata-updater.js` from the project directory, or use `node /path/to/photo-metadata-updater.js` from any directory
 
-App should be accessible on http://localhost:8000
+App will be accessible on http://localhost:8000
 
 # Using the App
 
