@@ -9,3 +9,10 @@ node_modules/
 !src/frontend/.env
 mockup.drawio
 demo.gif
+.env.template
+config.properties
+config.template.properties
+photo-metadata-updater/
+photo-metadata-updater.zip
+build.sh
+readme.txt

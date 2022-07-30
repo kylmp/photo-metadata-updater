@@ -1,7 +1,7 @@
 <template>
   <BingMap v-if="provider === 'BING'" :apikey="apikey"></BingMap>
   <GoogleMap v-if="provider === 'GOOGLE'" :apikey="apikey"></GoogleMap>
-  <div v-if="!loaded">Loading...</div>
+  <div v-if="apikey === ''">Loading...</div>
 </template>
 
 <script>
@@ -17,17 +17,18 @@ export default {
     GoogleMap,
   },
   setup() {
-    const loaded = ref(false);
     const provider = ref('');
     const apikey = ref('');
 
     axios.get('/api/maps-api-key').then((response) => {
       provider.value = response.data.provider;
       apikey.value = response.data.key;
-      loaded.value = true;
-    });
+    }).catch(() => {
+      provider.value = 'BING';
+      apikey.value = 'NO-API-KEY';
+    })
 
-    return { loaded, provider, apikey };
+    return { provider, apikey };
   },
 }
 </script>

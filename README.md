@@ -11,7 +11,7 @@ Node.js application with a Vue frontend. Runs on Mac/Unix systems, not tested on
 
 ### Please make backups of all photos before using the app and editing metadata, in case of unexpected errors.
 
-![](https://github.com/kylmp/photo-metadata-updater/blob/develop/demo.gif)
+![Demo](https://github.com/kylmp/photo-metadata-updater/blob/master/demo.gif)
 
 # Required Dependencies
 
@@ -21,12 +21,12 @@ Ensure you have the following dependencies downloaded on your system:
 * [Node.js](https://nodejs.org/en/download/) - Used to run the application
 * [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) - Used for displaying map and timezone calculations
 
-# Build and Run Application
+# Run App Guide
 
 ### Setup
 1. [Download zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater.zip)
 2. Extract the zip into a new project directory
-4. Open the `.env` file and add your bing API key, and update the exiftool path (if not globally accessable on your computer)
+4. Edit the `config.properties` file and add your bing API key, and update the exiftool path (if not globally accessable on your computer)
  
 ### Run application
 Run the command `node photo-metadata-updater.js` from the project directory, or use `node /path/to/photo-metadata-updater.js` from any directory

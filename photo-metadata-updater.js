@@ -4,7 +4,7 @@ const path = require('path');
 const shell = require('shelljs');
 const app = express();
 const imgFolder = require('./src/service/img-folder-service');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, './config.properties') });
 
 const port = process.env.PORT || 8000;
 const appName = 'photo-metadata-updater';
