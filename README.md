@@ -24,14 +24,16 @@ Ensure you have the following dependencies downloaded on your system:
 # Run App Guide
 
 ### Setup
-1. [Download zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater.zip)
-2. Extract the zip into a new project directory
-4. Edit the `config.properties` file and add your bing API key, and update the exiftool path (if not globally accessable on your computer)
+1. [Download zip of the latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater.zip) and extract it into a new project directory.
+2. Edit the `BING_API_KEY` field in `config.properties` to add your bing API key. Get one [here](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) if needed.
+3. Edit the `EXIFTOOL_PATH` field in `config.properties` to add the path to your exiftool install directory.
+     - Note: Step 3 is not necessary if exiftool is accessable in your system PATH (recommended).
  
 ### Run application
-Run the command `node photo-metadata-updater.js` from the project directory, or use `node /path/to/photo-metadata-updater.js` from any directory
+To start the app, run the command `node photo-metadata-updater.js` from the project directory<br>
+<sub>Alternatively, you can use `node /path/to/photo-metadata-updater.js` from any directory</sub>
 
-App will be accessible on http://localhost:8000
+<b>App will be accessible on</b> http://localhost:8000
 
 # Using the App
 
