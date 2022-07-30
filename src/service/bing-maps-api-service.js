@@ -5,8 +5,8 @@ const baseUrl = process.env.BING_TZ_URL || 'https://dev.virtualearth.net/REST/v1
 
 module.exports = {
   getTzOffsetFromCoordinates: async function (lat, lon, date, time) {
-    const apiKey = process.env.BING_API_KEY || '';
-    if (apiKey === '') {
+    const apiKey = process.env.BING_API_KEY || 'YOUR_BING_API_KEY';
+    if (apiKey === 'YOUR_BING_API_KEY') {
       throw new Error("No bing API key in environment");
     }
     

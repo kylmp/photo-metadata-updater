@@ -241,8 +241,8 @@ export default {
       axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
         offset.value = res.data;
         gettingTimezone.value = false;
-      }).catch(() => {
-        alertStore.alert.error(`Could not determine timezone`);
+      }).catch((err) => {
+        alertStore.alert.error(err.response.data);
         gettingTimezone.value = false;
       });
     }
