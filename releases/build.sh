@@ -7,13 +7,18 @@
 # 	exiftool/
 # Note - these files are in the repo as a zip, extract it first before trying to build
 # In order for the git commands to work, the build script needs to be run within the repo
-# Requires pkg (node app packager), jq (json parser), and gh (github CLI)
+# Requires pkg (node app packager), jq (json parser), and gh (github CLI), npm (node package manager)
 # (optional) argument 1: version number
 
 scriptdir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 function do_build_release() {
-	echo -e "\n\nCreating executables"
+	echo -e "\n\nBuilding frontend"
+	npm run --prefix $scriptdir/../src/frontend build-silent
+	clear
+	echo "Frontend built"
+
+	echo -e "Creating executables"
 	pkg $scriptdir/../photo-metadata-updater.js --config $scriptdir/../package.json --target macos,linux --out-path $scriptdir
 
 	echo "Creating version folder"
@@ -41,6 +46,26 @@ function do_build_release() {
 	mv $scriptdir/package.updated.backend.json $scriptdir/../package.json
 	jq '.version = "'"$1"'"' $scriptdir/../src/frontend/package.json > $scriptdir/package.updated.frontend.json
 	mv $scriptdir/package.updated.frontend.json $scriptdir/../src/frontend/package.json
+
+	echo
+	read -p "Create commit, tag, and draft github release for version bump? [y/n]: " -n 1 -r
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		echo
+		git add . && git commit -m "Version bump - $1"
+		git push
+		git tag -a v$1 -m "Version $1"
+		git push origin v$1
+		git tag -d v$1
+		echo -e "\nVersion bumped, commit pushed and new tag created\n"
+		read -p "Please fill out the release notes (press any key to continue)"
+		nano $scriptdir/release-notes.txt
+		echo -e "\nCreating the github release..."
+		gh release create v$1 $scriptdir/$1/*.zip -t "v$1" -F $scriptdir/release-notes.txt
+		rm $scriptdir/release-notes.txt
+
+	else
+		echo -e "\nGit operations ignored"
+	fi
 
 	echo -e "\nDone!\n"
 }
