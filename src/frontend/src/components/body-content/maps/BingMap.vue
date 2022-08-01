@@ -41,7 +41,7 @@ export default {
       const center = new Microsoft.Maps.Location(coordinatesStore.coordinates.lat, coordinatesStore.coordinates.lon);
       map.value = new Microsoft.Maps.Map(document.getElementById("map"), {
         mapTypeId: mode,
-        zoom: 10,
+        zoom: getZoom(center),
         maxZoom: 21,
         center: center,
         maxNetworkLinkDepth: 3,
@@ -66,6 +66,10 @@ export default {
       coordinatesStore.update(click.location.latitude, click.location.longitude);
     }
 
+    const getZoom = (center) => {
+      return (center.latitude === 0 && center.longitude === 0) ? 1 : 10;
+    }
+
     // Listen to coordinates updates, and move map to new position and add a pushpin there
     // If coordinates change is due to a new photo being selected, then reset the zoom level to default
     coordinatesStore.$subscribe((mutation, state) => {
@@ -73,7 +77,7 @@ export default {
         const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
         let viewOptions = { center: center };
         if (state.isNewPhoto) {
-          viewOptions.zoom = 10;
+          viewOptions.zoom = getZoom(center);
         }
         map.value.setView(viewOptions);
 
