@@ -25,6 +25,8 @@ In order to take advantage of timezone and map features, you need a [Bing maps A
 4. Double click the `photo-metadata-updater` file, you will see a console window open
 5. In a browser, navigate to http://localhost:8000
 
+If you want to contribute, instructions for local setup for development is in the [wiki](https://github.com/kylmp/photo-metadata-updater/wiki/Local-Setup-(Development))
+
 # Using the App
 
 ### Usage
@@ -71,3 +73,4 @@ This application writes to the following EXIF metadata fields:
 * [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/v8-web-control/creating-and-hosting-map-controls/) - Map view and timezones API
 * [Axios](https://axios-http.com/docs/intro) - HTTP Client
 * [Express.js](https://expressjs.com/) - Web framework for Node apps
+* [pkg](https://github.com/vercel/pkg) - Enables packaging node apps into executables
