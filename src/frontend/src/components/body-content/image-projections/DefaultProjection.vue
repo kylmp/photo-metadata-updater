@@ -9,7 +9,7 @@ export default {
   name: 'DefaultImage',
   props: ['photoName'],
   setup(props) {
-    const source = ref('');
+    const source = ref(`img/${props.photoName}`);
 
     watch(() => props.photoName, (newPhoto) => {
       source.value = `img/${newPhoto}`;
