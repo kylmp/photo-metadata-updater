@@ -68,7 +68,7 @@ export default {
     }
 
     const updateList = async (directoryPath) => {
-			selection.value = [];
+      selection.value = [];
       loadingMetadata.value = true;
       // Get photo list names & paths (fast)
       axios
@@ -81,7 +81,7 @@ export default {
           photos.value = [];
           const alertConfig = (err.response.status === 400) ?
             {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
-            {timeout: 5000, color: 'error', message: "Error loading photo list, is the backend running?"};
+            {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
           alertStore.alert.send(alertConfig);
         });
       // Get photo list metadatas (slow - used for displaying if photos already have GPS coordinates)
@@ -99,12 +99,7 @@ export default {
         });
     }
 
-    return { 
-      photos,
-      loadingMetadata,
-			selection,
-      photoSelected
-    }
+    return { photos, loadingMetadata, selection, photoSelected }
   },
 }
 </script>

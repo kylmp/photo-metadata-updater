@@ -17,14 +17,22 @@ router.get('/photo', async function (req, res) {
       imgFolder.setPath(directory);
       res.send(photoList);
     }).catch(err => { 
-      err.message.includes("No such file or directory") ? res.status(400).send() : res.status(500).send({error: err});
+      if ((typeof err === 'string' || err instanceof String) && err.includes("No such file or directory")) {
+        res.status(400).send();
+      } else {
+        res.status(500).send({error: err});
+      }
     });
 	}
 	else if (photoFile !== '') {
     directoryService.getPhotoMetadata(photoFile).then(photoMetadata => {
       res.status(200).send(photoMetadata);
     }).catch(err => { 
-      err.message.includes("File not found") ? res.status(400).send() : res.status(500).send({error: err});
+      if ((typeof err === 'string' || err instanceof String) && err.includes("File not found")) {
+        res.status(400).send();
+      } else {
+        res.status(500).send({error: err});
+      }
     });
 	}
 	else {
