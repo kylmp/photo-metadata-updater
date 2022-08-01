@@ -17,4 +17,6 @@ photo-metadata-updater.zip
 build.sh
 readme.txt
 exiftool/
-releases/
+releases/*
+!releases/build.sh
+!releases/release-build-dir.zip
