@@ -1,9 +1,9 @@
 var express = require('express');
 
-var imgFolder = createImgFolder('/Users/testing/photo-metadata-updater/photos');
+var imgFolder = createImgFolder();
 
-function createImgFolder (path) {
-  var static = express.static(path);
+function createImgFolder() {
+  var static = express.static((process.pkg) ? process.cwd() : __dirname);
 
   const imgFolder = function (req, res, next) {
     return static(req, res, next);

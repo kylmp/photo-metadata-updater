@@ -15,7 +15,7 @@ Node.js application with a Vue frontend. Runs on Mac/Unix systems, not tested on
 
 # Recommended Dependency
 
-In order to take advantage of timezone and map features, you need a [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key). Go to the link to get one, then save it in the app after startup.
+In order to take advantage of timezone and map features, you need a [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key). 
 
 # Run App Guide
 
