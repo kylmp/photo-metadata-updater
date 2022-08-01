@@ -54,7 +54,7 @@ function prompt_for_version() {
 	opt1=$(echo "$((versionParts[0]+=1)).0.0")
 	opt2=$(echo "${versionParts[0]}.$((versionParts[1]+=1)).0")
 	opt3=$(echo "${versionParts[0]}.${versionParts[1]}.$((versionParts[2]+=1))")
-  echo -e "Current version [$version] - Available version options:"
+	echo -e "Current version [$version] - Available version options:"
 	echo -e " 1. $opt1\n 2. $opt2\n 3. $opt3\n 4. Overwrite $version\n"
 	read -p "Version selection [1-4]: " -n 1 -r
 	if [ "$REPLY" -eq 1 ]; then
