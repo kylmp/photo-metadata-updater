@@ -6,7 +6,7 @@ module.exports = {
   geotagToCoordinates: function (geotag) {
     let coordinates = {latitude: 0, longitude: 0};
     if (geotag === undefined) {
-        return coordinates;
+      return coordinates;
     }
     gpsArr = geotag.replaceAll(' deg ', '|').replaceAll('\' ', '|').replaceAll('" ','|').replaceAll(', ','|').split('|');
     latitude = parseInt(gpsArr[0]) + parseFloat(gpsArr[1]/60) + parseFloat(gpsArr[2]/3600);

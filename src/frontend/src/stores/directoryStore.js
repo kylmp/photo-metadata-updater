@@ -9,8 +9,8 @@ export const useDirectoryStore = defineStore('directoryStore', {
   },
   actions: {
     update(dir) {
-        this.directory = dir;
-        this.time = Date.now();
+      this.directory = dir;
+      this.time = Date.now();
     }
   }
 }) 

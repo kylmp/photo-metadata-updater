@@ -9,10 +9,10 @@ const imgFolder = require('./image-folder');
 // If dir  query param: Get list of all photos in a directory (if metadata=true load times are long)
 // If file query param: Get a single photo metadata
 router.get('/photo', async function (req, res) {
-	const directory = req.query.dir || '';
-	const photoFile = req.query.file || '';
+  const directory = req.query.dir || '';
+  const photoFile = req.query.file || '';
   const withMetadata = req.query.metadata || false;
-	if (directory !== '') {
+  if (directory !== '') {
     directoryService.getPhotoList(directory, withMetadata).then(photoList => {
       imgFolder.setPath(directory);
       res.send(photoList);
@@ -23,8 +23,8 @@ router.get('/photo', async function (req, res) {
         res.status(500).send({error: err});
       }
     });
-	}
-	else if (photoFile !== '') {
+  }
+  else if (photoFile !== '') {
     directoryService.getPhotoMetadata(photoFile).then(photoMetadata => {
       res.status(200).send(photoMetadata);
     }).catch(err => { 
@@ -34,10 +34,10 @@ router.get('/photo', async function (req, res) {
         res.status(500).send({error: err});
       }
     });
-	}
-	else {
-		res.status(400).send({error: 'dir or file query param required'});
-	}
+  }
+  else {
+    res.status(400).send({error: 'dir or file query param required'});
+  }
 });
 
 // Update a photos metadata

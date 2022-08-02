@@ -22,7 +22,7 @@ export default {
 
 <style scoped>
 .v-img {
-    height: calc(100vh - 256px);
-    max-height: calc(100vh - 256px);
+  height: calc(100vh - 256px);
+  max-height: calc(100vh - 256px);
 }
 </style>

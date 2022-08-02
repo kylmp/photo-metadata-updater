@@ -1,6 +1,6 @@
 <template>
-    <DefaultImage v-if="type !== 'equirectangular'" :photoName="photoName"></DefaultImage>
-    <EquirectangularImage v-if="type === 'equirectangular'" :photoName="photoName"></EquirectangularImage>
+  <DefaultImage v-if="type !== 'equirectangular'" :photoName="photoName"></DefaultImage>
+  <EquirectangularImage v-if="type === 'equirectangular'" :photoName="photoName"></EquirectangularImage>
 </template>
 
 <script>
