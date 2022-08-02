@@ -12,11 +12,31 @@
 
 scriptdir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-function do_build_release() {
+function create_github_release() {
+  echo -e "\n\nUpdating version numbers"
+  jq '.version = "'"$1"'"' $scriptdir/../package.json > $scriptdir/package.updated.backend.json
+  mv $scriptdir/package.updated.backend.json $scriptdir/../package.json
+  jq '.version = "'"$1"'"' $scriptdir/../src/frontend/package.json > $scriptdir/package.updated.frontend.json
+  mv $scriptdir/package.updated.frontend.json $scriptdir/../src/frontend/package.json
+
+  git add . && git commit -m "Version bump - $1"
+  git push
+  git tag -a v$1 -m "Version $1"
+  git push origin v$1
+  git tag -d v$1
+  echo -e "\nVersion bumped, commit pushed and new tag created\n"
+
+  read -p "Please fill out the release notes (press any key to continue)"
+  nano $scriptdir/release-notes.txt
+  echo -e "\nCreating the github release..."
+  gh release create v$1 $scriptdir/$1/*.zip -t "v$1" -F $scriptdir/release-notes.txt
+  rm $scriptdir/release-notes.txt
+}
+
+function build_release() {
   echo -e "\n\nBuilding frontend"
-  npm run --prefix $scriptdir/../src/frontend build-silent
-  clear
-  echo "Frontend built"
+  npm run --prefix $scriptdir/../src/frontend build
+  echo -e "\nFrontend built"
 
   echo -e "Creating executables"
   pkg $scriptdir/../photo-metadata-updater.js --config $scriptdir/../package.json --target macos,linux --out-path $scriptdir
@@ -41,28 +61,10 @@ function do_build_release() {
   rm -rf $PWD/photo-metadata-updater
   rm $scriptdir/release-build-dir/photo-metadata-updater
 
-  echo "Updating version numbers"
-  jq '.version = "'"$1"'"' $scriptdir/../package.json > $scriptdir/package.updated.backend.json
-  mv $scriptdir/package.updated.backend.json $scriptdir/../package.json
-  jq '.version = "'"$1"'"' $scriptdir/../src/frontend/package.json > $scriptdir/package.updated.frontend.json
-  mv $scriptdir/package.updated.frontend.json $scriptdir/../src/frontend/package.json
-
   echo
-  read -p "Create commit, tag, and draft github release for version bump? [y/n]: " -n 1 -r
+  read -p "Update version number, create tag, and draft github release? [y/n]: " -n 1 -r
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo
-    git add . && git commit -m "Version bump - $1"
-    git push
-    git tag -a v$1 -m "Version $1"
-    git push origin v$1
-    git tag -d v$1
-    echo -e "\nVersion bumped, commit pushed and new tag created\n"
-    read -p "Please fill out the release notes (press any key to continue)"
-    nano $scriptdir/release-notes.txt
-    echo -e "\nCreating the github release..."
-    gh release create v$1 $scriptdir/$1/*.zip -t "v$1" -F $scriptdir/release-notes.txt
-    rm $scriptdir/release-notes.txt
-
+    create_github_release $1
   else
     echo -e "\nGit operations ignored"
   fi
@@ -82,24 +84,24 @@ function prompt_for_version() {
   echo -e " 1. $opt1\n 2. $opt2\n 3. $opt3\n 4. Overwrite $version\n"
   read -p "Version selection [1-4]: " -n 1 -r
   if [ "$REPLY" -eq 1 ]; then
-    do_build_release $opt1
+    build_release $opt1
   elif [ "$REPLY" -eq 2 ]; then
-    do_build_release $opt2
+    build_release $opt2
   elif [ "$REPLY" -eq 3 ]; then
-    do_build_release $opt3
+    build_release $opt3
   elif [ "$REPLY" -eq 4 ]; then
-    do_build_release $version
+    build_release $version
+  else 
+    echo -e "\n\nInvalid selection, cancelled\n"
+    exit 1
   fi
-  echo -e "\n\nInvalid selection, cancelled\n"
-  exit 1
 }
 
 function use_version_argument() {
   [ -d "$scriptdir/$1" ] && echo -e "WARNING - Version $1 already exists, if you continue it will overwrite the existing release"
-  echo
   read -p "Create release for v$1? [y/n]: " -n 1 -r
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    do_build_release $1
+    build_release $1
   else
     echo -e "\n\nCancelled\n"
     exit 1

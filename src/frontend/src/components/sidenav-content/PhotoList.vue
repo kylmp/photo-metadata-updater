@@ -15,13 +15,13 @@
     v-for="(photo, i) in photos"
     :key="photo.name"
     :value="i"
+    :title="photo.name"
+    min-height="32"
     active-color="img-name"
     @click="photoSelected(i)">
-    <v-list-item-title v-text="photo.name"></v-list-item-title>
-    <v-spacer></v-spacer>
-    <v-list-item-avatar v-if="photo.isGeotagged === true" class="pa-0 mt-0 mb-0 ml-n2 mr-n1 pr-n2">
+    <template v-slot:append v-if="photo.isGeotagged === true">
       <v-icon size="x-small">mdi-earth</v-icon>
-    </v-list-item-avatar>
+    </template>
   </v-list-item>
 </v-list>
 </template>
@@ -105,7 +105,7 @@ export default {
 </script>
 
 <style scoped>
-.v-avatar {
-  max-height: 32px;
+.v-list-item__append > .v-icon {
+  margin-inline-start: 0;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <v-img :src="source"></v-img>
+  <v-img :src="source"></v-img>
 </template>
 
 <script>

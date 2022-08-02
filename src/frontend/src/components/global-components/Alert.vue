@@ -18,6 +18,7 @@ export default {
     const defaultMessage = ref('Missing message text!');
 
     const send = (data) => {
+      clear();
       if (typeof data === "string") {
         message.value = data;
         color.value = 'primary';
@@ -31,6 +32,7 @@ export default {
     }
 
     const success = (data) => {
+      clear();
       if (typeof data === "string") {
         message.value = data;
       }
@@ -43,6 +45,7 @@ export default {
     }
 
     const error = (data) => {
+      clear();
       if (typeof data === "string") {
         message.value = data;
       }
