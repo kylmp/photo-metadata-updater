@@ -1,6 +1,6 @@
 <template>
-  <BingMap v-if="provider === 'BING'" :apikey="apikey"></BingMap>
-  <GoogleMap v-if="provider === 'GOOGLE'" :apikey="apikey"></GoogleMap>
+  <bing-map v-if="provider === 'BING'" :apikey="apikey"></bing-map>
+  <google-map v-if="provider === 'GOOGLE'" :apikey="apikey"></google-map>
   <div v-if="apikey === ''">Loading...</div>
 </template>
 

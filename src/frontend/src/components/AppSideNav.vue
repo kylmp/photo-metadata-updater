@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer color="divider" width="290" permanent>
-    <PhotoList></PhotoList>
+    <photo-list></photo-list>
   </v-navigation-drawer>
 </template>
 

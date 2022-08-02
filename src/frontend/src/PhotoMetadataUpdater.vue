@@ -1,9 +1,9 @@
 <template>
   <v-app>
-    <AppHeader></AppHeader>
-    <AppSideNav></AppSideNav>
-    <AppBody></AppBody>
-    <GlobalAlert ref="alert"></GlobalAlert>
+    <app-header></app-header>
+    <app-side-nav></app-side-nav>
+    <app-body></app-body>
+    <global-alert ref="alert"></global-alert>
   </v-app>
 </template>
 
@@ -15,7 +15,7 @@ import GlobalAlert from './components/global-components/Alert.vue';
 import { useAlertStore } from './stores/alertStore';
 
 export default {
-  name: 'App',
+  name: 'PhotoMetadataUpdater',
   components: {
     AppHeader,
     AppBody,

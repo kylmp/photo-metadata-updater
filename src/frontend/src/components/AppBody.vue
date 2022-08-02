@@ -3,19 +3,19 @@
     <v-container v-if="!noImage">
       <v-row>
         <v-col>
-          <MetadataDisplay :metadata="metadata"></MetadataDisplay>
+          <metadata-display :metadata="metadata"></metadata-display>
         </v-col>
       </v-row>
       <v-row class="pt-4 fill-height" justify="center">
         <v-col class="pr-0 mr-0">
-          <ImageDisplay :projection="metadata.projection" :name="metadata.name"></ImageDisplay>
+          <image-display :projection="metadata.projection" :name="metadata.name"></image-display>
         </v-col>
         <v-col>
-          <MapDisplay></MapDisplay>
+          <map-display></map-display>
         </v-col>
       </v-row>
     </v-container>
-    <NoImageDisplay v-if="noImage" :type="noImageType"></NoImageDisplay>
+    <no-image-display v-if="noImage" :type="noImageType"></no-image-display>
   </v-main>
 </template>
 
