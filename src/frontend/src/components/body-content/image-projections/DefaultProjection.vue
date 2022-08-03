@@ -2,22 +2,16 @@
   <v-img :src="source"></v-img>
 </template>
 
-<script>
+<script setup>
 import { ref, watch } from 'vue'
 
-export default {
-  name: 'DefaultImage',
-  props: ['photoName'],
-  setup(props) {
-    const source = ref(`img/${props.photoName}`);
+const props = defineProps(['photoName']);
 
-    watch(() => props.photoName, (newPhoto) => {
-      source.value = `img/${newPhoto}`;
-    });
+const source = ref(`img/${props.photoName}`);
 
-    return { source };
-  },
-}
+watch(() => props.photoName, (newPhoto) => {
+  source.value = `img/${newPhoto}`;
+});
 </script>
 
 <style scoped>

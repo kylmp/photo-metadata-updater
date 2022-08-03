@@ -4,66 +4,49 @@
   </v-snackbar>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 
-export default {
-  name: "GlobalAlert",
-  setup() {
-    const showSnackbar = ref(false);
-    const message = ref('');
-    const color = ref('primary');
-    const timeout = ref(3000);
-    const defaultTimeout = ref(3000);
-    const defaultMessage = ref('Missing message text!');
+const defaultColor = 'primary';
+const defaultTimeout = 3000;
+const defaultMessage = 'Missing message text!';
 
-    const send = (data) => {
-      clear();
-      if (typeof data === "string") {
-        message.value = data;
-        color.value = 'primary';
-      }
-      else {
-        message.value = data.message || defaultMessage.value
-        color.value = data.color || 'primary'
-        timeout.value = data.timeout || defaultTimeout.value
-      }
-      showSnackbar.value = true
-    }
+const showSnackbar = ref(false);
+const message = ref(defaultMessage);
+const color = ref(defaultColor);
+const timeout = ref(defaultTimeout);
 
-    const success = (data) => {
-      clear();
-      if (typeof data === "string") {
-        message.value = data;
-      }
-      else {
-        message.value = data.message || defaultMessage.value
-        timeout.value = data.timeout || defaultTimeout.value
-      }
-      color.value = 'success'
-      showSnackbar.value = true
-    }
-
-    const error = (data) => {
-      clear();
-      if (typeof data === "string") {
-        message.value = data;
-      }
-      else {
-        message.value = data.message || defaultMessage.value
-        timeout.value = data.timeout || defaultTimeout.value
-      }
-      color.value = 'error'
-      showSnackbar.value = true
-    }
-
-    const clear = () => {
-      showSnackbar.value = false;
-    }
-
-    return { color, timeout, showSnackbar, message, send, success, error, clear };
-  },
+const send = (data) => {
+  const selectedColor = (typeof data === "string") ? defaultColor : data.color;
+  showAlert(data, selectedColor || defaultColor);
 }
+
+const success = (data) => {
+  showAlert(data, 'success');
+}
+
+const error = (data) => {
+  showAlert(data, 'error');
+}
+
+const clear = () => {
+  showSnackbar.value = false;
+}
+
+const showAlert = (data, selectedColor) => {
+  clear();
+  if (typeof data === "string") {
+    message.value = data;
+  }
+  else {
+    message.value = data.message || defaultMessage;
+    timeout.value = data.timeout || defaultTimeout;
+  }
+  color.value = selectedColor;
+  showSnackbar.value = true;
+}
+
+defineExpose({ send, success, error, clear }); // Explicitly expose these functions (private by default)
 </script>
 
 <style>

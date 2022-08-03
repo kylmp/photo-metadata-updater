@@ -11,27 +11,20 @@
   <v-btn @click="updateDirectory">Fetch</v-btn>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useAlertStore } from '../../stores/alertStore';
 import { useDirectoryStore } from '../../stores/directoryStore';
 
-export default {
-  name: 'DirectorySearch',
-  setup() {
-    const directoryStore = useDirectoryStore();
-    const alertStore = useAlertStore();
-    const directory = ref('');
+const directoryStore = useDirectoryStore();
+const alertStore = useAlertStore();
+const directory = ref('');
 
-    const updateDirectory = () => {
-      if (!directory.value) {
-        alertStore.alert.error("Directory path required!");
-        return;
-      }
-      directoryStore.update(directory.value);
-    }
-
-    return { directory, updateDirectory };
-  },
+const updateDirectory = () => {
+  if (!directory.value) {
+    alertStore.alert.error("Directory path required!");
+    return;
+  }
+  directoryStore.update(directory.value);
 }
 </script>

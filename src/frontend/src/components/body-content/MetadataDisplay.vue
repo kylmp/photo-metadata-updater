@@ -121,7 +121,7 @@
   </v-form>
 </template>
 
-<script>
+<script setup>
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
@@ -129,150 +129,142 @@ import { useAlertStore } from '../../stores/alertStore'
 import { useOptionsStore } from '../../stores/optionsStore'
 import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore'
 
-export default {
-  name: 'MetadataDisplay',
-  props: ['metadata'],
-  setup(props) {
-    const geotaggedPhotoStore = useGeotaggedPhotoStore();
-    const coordinatesStore = useCoordinatesStore();
-    const alertStore = useAlertStore();
-    const optionsStore = useOptionsStore();
-    const form = ref(null);
-    const saving = ref(false);
-    const saveComplete = ref(false);
-    const gettingTimezone = ref(false);
-    const tooltipEnabled = ref(optionsStore.showTooltip);
-    const saveWarningEnabled = ref(optionsStore.saveWarning);
-    const dialog = ref(false);
-    const valid = ref(true);
-    const elevation = ref('');
-    const elevationRules = ref([
-      v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Elevation must be a +/- decimal number',
-    ]);
-    const longitude = ref('');
-    const longitudeRules = ref([
-      v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Longitude must be a +/- decimal number',
-      v => v <= 180 && v >= -180 || 'Longitude should be between -180 to 180',
-    ]);
-    const latitude = ref('');
-    const latitudeRules = ref([
-      v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Latitude must be a +/- decimal number',
-      v => v <= 90 && v >= -90 || 'Latitude should be between -90 to 90',
-    ]);
-    const createDate = ref('');
-    const createDateRules = ref([
-      v => /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(v) || 'Create date format must be YYYY-MM-DD',
-    ]);
-    const createTime = ref('');
-    const createTimeRules = ref([
-      v => /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/.test(v) || 'Create time format must be HH:MM:SS',
-    ]);
-    const offset = ref('');
-    const offsetRules = ref([
-      v => /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
-    ]);
+const props = defineProps(['metadata']);
 
-    const ensureValidCoordinates = () => {
-      latitude.value = (latitude.value > 90) ? 90 : latitude.value;
-      latitude.value = (latitude.value < -90) ? -90 : latitude.value;
-      longitude.value = (longitude.value > 180) ? 180 : longitude.value;
-      longitude.value = (longitude.value < -180) ? -180 : longitude.value;
-    }
+const geotaggedPhotoStore = useGeotaggedPhotoStore();
+const coordinatesStore = useCoordinatesStore();
+const alertStore = useAlertStore();
+const optionsStore = useOptionsStore();
+const form = ref(null);
+const saving = ref(false);
+const saveComplete = ref(false);
+const gettingTimezone = ref(false);
+const tooltipEnabled = ref(optionsStore.showTooltip);
+const saveWarningEnabled = ref(optionsStore.saveWarning);
+const dialog = ref(false);
+const valid = ref(true);
+const elevation = ref('');
+const elevationRules = ref([
+  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Elevation must be a +/- decimal number',
+]);
+const longitude = ref('');
+const longitudeRules = ref([
+  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Longitude must be a +/- decimal number',
+  v => v <= 180 && v >= -180 || 'Longitude should be between -180 to 180',
+]);
+const latitude = ref('');
+const latitudeRules = ref([
+  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Latitude must be a +/- decimal number',
+  v => v <= 90 && v >= -90 || 'Latitude should be between -90 to 90',
+]);
+const createDate = ref('');
+const createDateRules = ref([
+  v => /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(v) || 'Create date format must be YYYY-MM-DD',
+]);
+const createTime = ref('');
+const createTimeRules = ref([
+  v => /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/.test(v) || 'Create time format must be HH:MM:SS',
+]);
+const offset = ref('');
+const offsetRules = ref([
+  v => /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
+]);
 
-    const coordinatesUpdate = () => {
-      ensureValidCoordinates();
-      coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
-    }
-
-    const geotagPhoto = (name, lat, lon) => {
-      if (lat != '0' || lon != '0') {
-        geotaggedPhotoStore.update(name);
-      }
-    }
-
-    const setFields = () => {
-      elevation.value = props.metadata.elevation;
-      longitude.value = props.metadata.coordinates.longitude;
-      latitude.value = props.metadata.coordinates.latitude;
-      createDate.value = props.metadata.createDate;
-      createTime.value = props.metadata.createTime;
-      offset.value = props.metadata.tzOffset;
-      coordinatesUpdate();
-    }
-
-    const saveMetadata = async () => {
-      dialog.value = false;
-      saving.value = true;
-      const result = await form.value.validate();
-      if (result.valid === true) {
-        const updatedData = {
-          "file": props.metadata.path,
-          "date": createDate.value,
-          "time": createTime.value,
-          "elevation": elevation.value,
-          "latitude": latitude.value,
-          "longitude": longitude.value,
-          "tzOffset": offset.value,
-        }
-        axios.post('/api/photo', updatedData).then(() => {
-          saving.value = false;
-          saveComplete.value = true;
-          if (!props.metadata.isGeotagged) {
-            geotagPhoto(props.metadata.name, latitude.value, longitude.value);
-          }
-          setTimeout(() => { saveComplete.value = false; }, 3000);
-          alertStore.alert.success({message: "Photo updated", timeout: 3000})
-        }).catch(err => {
-          alertStore.alert.error(err);
-          saving.value = false;
-        })
-      }
-      else {
-        saving.value = false;
-        const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
-        alertStore.alert.error({message: errorString, timeout: 10000});
-      }
-    }
-
-    const calculateTimezone = () => {
-      gettingTimezone.value = true;
-      const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
-      const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
-      axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
-        offset.value = res.data;
-        gettingTimezone.value = false;
-      }).catch((err) => {
-        alertStore.alert.error(err.response.data);
-        gettingTimezone.value = false;
-      });
-    }
-
-    setFields();
-
-    watch(() => props.metadata, () => {
-      setFields();
-    });
-
-    coordinatesStore.$subscribe((mutation, state) => {
-      latitude.value = state.coordinates.lat;
-      longitude.value = state.coordinates.lon;
-      ensureValidCoordinates();
-    });
-
-    optionsStore.$subscribe((mutation, state) => {
-      tooltipEnabled.value = state.showTooltip;
-      saveWarningEnabled.value = state.saveWarning;
-    });
-
-    return {
-      form, valid, saveComplete, saving, gettingTimezone, dialog,
-      elevation, elevationRules, latitude, latitudeRules, longitude, longitudeRules, 
-      offset, offsetRules, createDate, createDateRules, createTime, createTimeRules, 
-      coordinatesUpdate, setFields, saveMetadata, calculateTimezone, geotagPhoto,
-      tooltipEnabled, saveWarningEnabled
-    }
-  },
+const ensureValidCoordinates = () => {
+  latitude.value = (latitude.value > 90) ? 90 : latitude.value;
+  latitude.value = (latitude.value < -90) ? -90 : latitude.value;
+  longitude.value = (longitude.value > 180) ? 180 : longitude.value;
+  longitude.value = (longitude.value < -180) ? -180 : longitude.value;
 }
+
+// Update coordinates store on coordinates changes (So the map can recieve updates)
+const coordinatesUpdate = () => {
+  ensureValidCoordinates();
+  coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
+}
+
+const geotagPhoto = (name, lat, lon) => {
+  if (lat != '0' || lon != '0') {
+    geotaggedPhotoStore.update(name);
+  }
+}
+
+const setFields = () => {
+  elevation.value = props.metadata.elevation;
+  longitude.value = props.metadata.coordinates.longitude;
+  latitude.value = props.metadata.coordinates.latitude;
+  createDate.value = props.metadata.createDate;
+  createTime.value = props.metadata.createTime;
+  offset.value = props.metadata.tzOffset;
+  coordinatesUpdate();
+}
+
+const saveMetadata = async () => {
+  dialog.value = false;
+  saving.value = true;
+  const result = await form.value.validate();
+  if (result.valid === true) {
+    const updatedData = {
+      "file": props.metadata.path,
+      "date": createDate.value,
+      "time": createTime.value,
+      "elevation": elevation.value,
+      "latitude": latitude.value,
+      "longitude": longitude.value,
+      "tzOffset": offset.value,
+    }
+    axios.post('/api/photo', updatedData).then(() => {
+      saving.value = false;
+      saveComplete.value = true;
+      if (!props.metadata.isGeotagged) {
+        geotagPhoto(props.metadata.name, latitude.value, longitude.value);
+      }
+      setTimeout(() => { saveComplete.value = false; }, 3000);
+      alertStore.alert.success({message: "Photo updated", timeout: 3000})
+    }).catch(err => {
+      alertStore.alert.error(err);
+      saving.value = false;
+    })
+  }
+  else {
+    saving.value = false;
+    const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
+    alertStore.alert.error({message: errorString, timeout: 10000});
+  }
+}
+
+const calculateTimezone = () => {
+  gettingTimezone.value = true;
+  const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
+  const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
+  axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
+    offset.value = res.data;
+    gettingTimezone.value = false;
+  }).catch((err) => {
+    alertStore.alert.error(err.response.data);
+    gettingTimezone.value = false;
+  });
+}
+
+setFields();
+
+// Listen to metadata changes to load new values (when a new photo is selected)
+watch(() => props.metadata, () => {
+  setFields();
+});
+
+// Listen to coordinates store to update coordinates fields (i.e. from user clicking on the map)
+coordinatesStore.$subscribe((mutation, state) => {
+  latitude.value = state.coordinates.lat;
+  longitude.value = state.coordinates.lon;
+  ensureValidCoordinates();
+});
+
+// Listen to options store for enabling/disabling save warning and/or calculate tz tooltip
+optionsStore.$subscribe((mutation, state) => {
+  tooltipEnabled.value = state.showTooltip;
+  saveWarningEnabled.value = state.saveWarning;
+});
 </script>
 
 <style scoped>

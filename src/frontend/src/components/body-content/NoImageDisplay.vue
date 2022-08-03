@@ -10,32 +10,26 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 
-export default {
-  name: 'NoImageDisplay',
-  props: ['type'],
-  setup(props) {
-    const title = ref('');
-    const body = ref('');
+const props = defineProps(['type']);
 
-    switch (props.type) {
-      case 'notfound':
-        title.value = 'Image Not Found'
-        body.value = 'Was it moved, renamed or deleted? Try refreshing the file list with the fetch button above.'
-        break;
-      case 'error':
-        title.value = 'Error Loading Image'
-        body.value = 'Unexpected error loading image, please ensure the backend is running and try again.'
-        break;
-      default:
-        title.value = 'No Image Selected'
-        body.value = 'Enter the full path to a directory above, then select an image from the sidebar.'
-    }
-    
-    return { title, body };
-  },
+const title = ref('');
+const body = ref('');
+
+switch (props.type) {
+  case 'notfound':
+    title.value = 'Image Not Found'
+    body.value = 'Was it moved, renamed or deleted? Try refreshing the file list with the fetch button above.'
+    break;
+  case 'error':
+    title.value = 'Error Loading Image'
+    body.value = 'Unexpected error loading image, please ensure the backend is running and try again.'
+    break;
+  default:
+    title.value = 'No Image Selected'
+    body.value = 'Enter the full path to a directory above, then select an image from the sidebar.'
 }
 </script>
 

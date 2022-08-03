@@ -2,40 +2,38 @@
   <div id="panorama"></div>
 </template>
 
-<script>
-/* eslint-disable */
-import { onMounted, ref, watch } from 'vue'
+<script setup>
+import '../../../assets/pannellum';
+import { onMounted, watch } from 'vue'
 
-export default {
-  name: 'EquirectangularImage',
-  props: ['photoName'],
-  setup(props) {
-    const pano = ref('undefined');
-    const panoConfig = ref({
-      "type": "equirectangular",
-      "panorama": `img/${props.photoName}`,
-      "showZoomCtrl": false,
-      "autoRotate": -10,
-      "autoLoad": true
-    });
+const props = defineProps(['photoName']);
 
-    const buildPanorama = () => {
-      if (pano.value !== 'undefined') {
-        pano.value.destroy();
-      }
-      pano.value = pannellum.viewer('panorama', panoConfig.value);
-    }
+var panorama;
+var panoramaConfig = {
+  "type": "equirectangular",
+  "panorama": `img/${props.photoName}`,
+  "showZoomCtrl": false,
+  "autoRotate": -10,
+  "autoLoad": true
+};
 
-    watch(() => props.photoName, (newPhoto) => {
-      panoConfig.value.panorama = `img/${newPhoto}`;
-      buildPanorama();
-    });
-
-    onMounted(() => {
-      buildPanorama();
-    });
-
-    return { };
-  },
+const buildPanorama = () => {
+  if (panorama) {
+    panorama.destroy();
+  }
+  panorama = pannellum.viewer('panorama', panoramaConfig);
 }
+
+watch(() => props.photoName, (newPhoto) => {
+  panoramaConfig.panorama = `img/${newPhoto}`;
+  buildPanorama();
+});
+
+onMounted(() => {
+  buildPanorama();
+});
 </script>
+
+<style>
+  @import '../../../assets/pannellum.css';
+</style>

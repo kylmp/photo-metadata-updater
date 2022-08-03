@@ -4,13 +4,6 @@
   </v-navigation-drawer>
 </template>
 
-<script>
+<script setup>
 import PhotoList from './sidenav-content/PhotoList.vue';
-
-export default {
-  name: 'AppSideNav',
-  components: {
-    PhotoList,
-  }
-}
 </script>

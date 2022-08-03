@@ -11,7 +11,7 @@
           <image-display :projection="metadata.projection" :name="metadata.name"></image-display>
         </v-col>
         <v-col>
-          <map-display></map-display>
+          <map-display/>
         </v-col>
       </v-row>
     </v-container>
@@ -19,7 +19,7 @@
   </v-main>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios'
 import { ref } from 'vue'
 import MetadataDisplay from './body-content/MetadataDisplay.vue';
@@ -30,42 +30,29 @@ import { useSelectedPhotoStore } from '../stores/selectedPhotoStore';
 import { useDirectoryStore } from '../stores/directoryStore';
 import { useCoordinatesStore } from '../stores/coordinatesStore';
 
-export default {
-  name: 'AppBody',
-  components: {
-    MetadataDisplay,
-    ImageDisplay,
-    MapDisplay,
-    NoImageDisplay
-  },
-  setup() {
-    const selectedPhotoStore = useSelectedPhotoStore();
-    const directoryStore = useDirectoryStore();
-    const coordinatesStore = useCoordinatesStore();
-    const metadata = ref({});
-    const noImage = ref(true);
-    const noImageType = ref('unselected');
+const selectedPhotoStore = useSelectedPhotoStore();
+const directoryStore = useDirectoryStore();
+const coordinatesStore = useCoordinatesStore();
+const metadata = ref({});
+const noImage = ref(true);
+const noImageType = ref('unselected');
 
-    // When directory changes, clear app body to unselect previous image
-    directoryStore.$subscribe(() => {
-      noImage.value = true;
-      noImageType.value = 'unselected';
-    });
+// When directory changes, clear app body to unselect previous image
+directoryStore.$subscribe(() => {
+  noImage.value = true;
+  noImageType.value = 'unselected';
+});
 
-    // Fetch photo metadata when selected image changes
-    selectedPhotoStore.$subscribe((mutation, state) => {
-      axios.get('/api/photo?file='+encodeURI(state.photo.path)).then(res => {
-        metadata.value = res.data;
-        noImage.value = false;
-        coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude, true);
-      })
-      .catch((err) => { 
-        noImage.value = true;
-        noImageType.value = (err.response.status === 400) ? 'notfound' : 'error';
-      });
-    });
-
-    return { metadata, noImage, noImageType };
-  },
-}
+// Fetch photo metadata when selected image changes
+selectedPhotoStore.$subscribe((mutation, state) => {
+  axios.get('/api/photo?file='+encodeURI(state.photo.path)).then(res => {
+    metadata.value = res.data;
+    noImage.value = false;
+    coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude, true);
+  })
+  .catch((err) => { 
+    noImage.value = true;
+    noImageType.value = (err.response.status === 400) ? 'notfound' : 'error';
+  });
+});
 </script>

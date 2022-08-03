@@ -26,7 +26,7 @@
 </v-list>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios'
 import { ref } from 'vue'
 import { useDirectoryStore } from '../../stores/directoryStore';
@@ -34,73 +34,67 @@ import { useAlertStore } from '../../stores/alertStore';
 import { useSelectedPhotoStore } from '../../stores/selectedPhotoStore';
 import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore';
 
-export default {
-  name: 'PhotoList',
-  setup() {
-    const photos = ref([]);
-    const selection = ref([]);
-    const loadingMetadata = ref(false);
-    const directoryStore = useDirectoryStore();
-    const alertStore = useAlertStore();
-    const selectedPhotoStore = useSelectedPhotoStore();
-    const geotaggedPhotoStore = useGeotaggedPhotoStore();
+const photos = ref([]);
+const selection = ref([]);
+const loadingMetadata = ref(false);
+const alertStore = useAlertStore();
+const directoryStore = useDirectoryStore();
+const selectedPhotoStore = useSelectedPhotoStore();
+const geotaggedPhotoStore = useGeotaggedPhotoStore();
 
-    directoryStore.$subscribe((mutation, state) => {
-      updateList(state.directory);
+// Update sidenav list when directory changes
+directoryStore.$subscribe((mutation, state) => {
+  updateList(state.directory);
+});
+
+// Add the globe icon to a photo when it gets geotagged
+geotaggedPhotoStore.$subscribe((mutation, state) => {
+  let updateIndex = -1;
+  for (let i = 0; i < photos.value.length; i++) {
+    if (photos.value[i].name === state.name) {
+      updateIndex = i;
+      break;
+    }
+  }
+  if (updateIndex >= 0) {
+    photos.value[updateIndex].isGeotagged = true;
+  }
+})
+
+const photoSelected = (index) => {
+  const selected = photos.value[index];
+  selectedPhotoStore.update({name: selected.name, path: selected.path});
+}
+
+const updateList = async (directoryPath) => {
+  selection.value = [];
+  loadingMetadata.value = true;
+  // Get photo list names & paths (fast)
+  axios.get('/api/photo?dir='+encodeURI(directoryPath)).then((result) => {
+      if (result.data.length === 0) {
+        alertStore.alert.send("Directory loaded, but no photos found")
+      }
+      photos.value = result.data.sort((a, b) => a.name.localeCompare(b.name));
+    }).catch((err) => { 
+      photos.value = [];
+      const alertConfig = (err.response.status === 400) ?
+        {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
+        {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
+      alertStore.alert.send(alertConfig);
     });
-
-    geotaggedPhotoStore.$subscribe((mutation, state) => {
-      let updateIndex = -1;
-      for (let i = 0; i < photos.value.length; i++) {
-        if (photos.value[i].name === state.name) {
-          updateIndex = i;
-          break;
+  // Get photo list metadatas (slow - used for getting isGeotagged metadata to add globe icon)
+  axios.get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true').then((result) => {
+      for (let photo in photos.value) {
+        for (let meta in result.data) {
+          if (photos.value[photo].name == result.data[meta].name) {
+            photos.value[photo].isGeotagged = result.data[meta].isGeotagged;
+          }
         }
       }
-      if (updateIndex >= 0) {
-        photos.value[updateIndex].isGeotagged = true;
-      }
-    })
-
-    const photoSelected = (index) => {
-      const selected = photos.value[index];
-      selectedPhotoStore.update({name: selected.name, path: selected.path});
-    }
-
-    const updateList = async (directoryPath) => {
-      selection.value = [];
-      loadingMetadata.value = true;
-      // Get photo list names & paths (fast)
-      axios
-        .get('/api/photo?dir='+encodeURI(directoryPath)).then((result) => {
-          if (result.data.length === 0) {
-            alertStore.alert.send("Directory loaded, but no photos found")
-          }
-          photos.value = result.data.sort((a, b) => a.name.localeCompare(b.name));
-        }).catch((err) => { 
-          photos.value = [];
-          const alertConfig = (err.response.status === 400) ?
-            {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
-            {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
-          alertStore.alert.send(alertConfig);
-        });
-      // Get photo list metadatas (slow - used for displaying if photos already have GPS coordinates)
-      axios.get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true').then((result) => {
-          for (let photo in photos.value) {
-            for (let meta in result.data) {
-              if (photos.value[photo].name == result.data[meta].name) {
-                photos.value[photo].isGeotagged = result.data[meta].isGeotagged;
-              }
-            }
-          }
-          loadingMetadata.value = false;
-        }).catch(() => { 
-          loadingMetadata.value = false;
-        });
-    }
-
-    return { photos, loadingMetadata, selection, photoSelected }
-  },
+      loadingMetadata.value = false;
+    }).catch(() => { 
+      loadingMetadata.value = false;
+    });
 }
 </script>
 
