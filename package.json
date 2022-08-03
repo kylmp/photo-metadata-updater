@@ -1,6 +1,6 @@
 {
   "name": "photo-metadata-updater",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Update photo metadata easily",
   "main": "photo-metadata-updater.js",
   "scripts": {
