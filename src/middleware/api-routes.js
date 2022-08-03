@@ -69,7 +69,7 @@ router.post('/photo', function (req, res) {
 
 // Get map provider API key
 router.get('/maps-api-key', async function (req, res) {
-  const apiProvider = req.query.provider || process.env.MAPS_API || 'BING';
+  const apiProvider = req.query.provider || process.env.SELECTED_MAP_TYPE || 'BING';
   let apiKey = '';
   switch (apiProvider.toUpperCase()) {
     case 'GOOGLE':

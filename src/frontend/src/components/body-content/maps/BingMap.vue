@@ -16,17 +16,15 @@ const optionsStore = useOptionsStore();
 var map;
 
 if (!props.apikey) {
-  document.getElementById("map").innerHTML = "ERROR LOADING MAP: No API key";
+  document.getElementById("map").innerHTML = "ERROR LOADING BING MAP: No API key";
 }
 
 // Register callback function for Bing maps api response
-window.OnLoadBingMapsApi = () => initMap();
+window.onLoadMap = () => initMap();
 
 // Inject Bing maps api script into the DOM
 let scriptTag = document.createElement("script");
-scriptTag.src = "https://www.bing.com/api/maps/mapcontrol?callback=OnLoadBingMapsApi&key=" + props.apikey;
-scriptTag.id = "scriptBingMaps";
-scriptTag.type = 'text/javascript';
+scriptTag.src = `https://www.bing.com/api/maps/mapcontrol?callback=onLoadMap&key=${props.apikey}`;
 scriptTag.async = true;
 scriptTag.defer = true;
 document.head.appendChild(scriptTag);

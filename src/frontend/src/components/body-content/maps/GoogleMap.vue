@@ -13,20 +13,23 @@ const theme = useTheme();
 const coordinatesStore = useCoordinatesStore();
 const optionsStore = useOptionsStore();
 
+const darkThemeOption = 'hybrid';
+const lightThemeOption = 'roadmap';
+const defaultZoom = 10;
+
 var map;
+var pushpin;
 
 if (!props.apikey) {
-  document.getElementById("map").innerHTML = "ERROR LOADING MAP: No API key";
+  document.getElementById("map").innerHTML = "ERROR LOADING GOOGLE MAP: No API key";
 }
 
-// Register callback function for Bing maps api response
-window.OnLoadBingMapsApi = () => initMap();
+// Register callback function for Google maps api response
+window.onLoadMap = () => initMap();
 
-// Inject Bing maps api script into the DOM
+// Inject Google maps api script into the DOM
 let scriptTag = document.createElement("script");
-scriptTag.src = "https://www.bing.com/api/maps/mapcontrol?callback=OnLoadBingMapsApi&key=" + props.apikey;
-scriptTag.id = "scriptBingMaps";
-scriptTag.type = 'text/javascript';
+scriptTag.src = `https://maps.googleapis.com/maps/api/js?key=${props.apikey}&callback=onLoadMap`;
 scriptTag.async = true;
 scriptTag.defer = true;
 document.head.appendChild(scriptTag);
@@ -34,70 +37,47 @@ document.head.appendChild(scriptTag);
 // Callback method for the bing maps API response, it initializes the map
 // Also adds a pushpin at the coordinates point, and registers the click event handler
 const initMap = () => {
-  const mode = theme.global.name.value === 'lightTheme' ? Microsoft.Maps.MapTypeId.road : Microsoft.Maps.MapTypeId.aerial;
-  const center = new Microsoft.Maps.Location(coordinatesStore.coordinates.lat, coordinatesStore.coordinates.lon);
-  map = new Microsoft.Maps.Map(document.getElementById("map"), {
-    mapTypeId: mode,
-    zoom: getZoom(center),
-    maxZoom: 21,
+  const mode = theme.global.name.value === 'lightTheme' ? lightThemeOption : darkThemeOption;
+  const center = new google.maps.LatLng(coordinatesStore.coordinates.lat, coordinatesStore.coordinates.lon);
+  map = new google.maps.Map(document.getElementById('map'), {
     center: center,
-    maxNetworkLinkDepth: 3,
-    enableClickableLogo: false,
-    showMapTypeSelector: false,
-    showBreadcrumb: false,
-    showDashboard: false,
-    showLocateMeButton: false,
-    showTrafficButton: false,
-    showZoomButtons: false,
-    showScalebar: false,
-    showTermsLink: false,
-    disableStreetside: true,
-    supportedMapTypes: [Microsoft.Maps.MapTypeId.road, Microsoft.Maps.MapTypeId.aerial]
+    zoom: getZoom(center),
+    mapTypeId: mode,
+    mapTypeControlOptions: {
+      mapTypeIds: [lightThemeOption, darkThemeOption]
+    },
+    clickableIcons: false,
+    fullscreenControl: false,
+    streetViewControl: false,
+    zoomControl: false,
+    mapTypeControl: false,
+    draggableCursor:'default'
   });
-  map.entities.push(new Microsoft.Maps.Pushpin(center));
-  Microsoft.Maps.Events.addHandler(map, 'click', handleMapClick);
+  pushpin = new google.maps.Marker({ position: center, clickable: false, map: map });
+  map.addListener("click", (click) => { coordinatesStore.update(click.latLng.lat(), click.latLng.lng()); });
 };
 
-// Update the coordinates store with new coordinates when the map is clicked
-const handleMapClick = (click) => {
-  coordinatesStore.update(click.location.latitude, click.location.longitude);
-}
-
-// Get zoom level: default = 10, photo with no coordinates = 1 (zoomed out)
+// Get zoom level - default or zoomed out (if no coordinates)
 const getZoom = (center) => {
-  return (center.latitude === 0 && center.longitude === 0) ? 1 : 10;
+  return (center.lat() === 0 && center.lng() === 0) ? 2 : defaultZoom;
 }
 
 // Listen to coordinates updates, and move map to new position and add a pushpin there
 // If coordinates change is due to a new photo being selected, then reset the zoom level to default
 coordinatesStore.$subscribe((mutation, state) => {
   if (map) {
-    const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
-    let viewOptions = { center: center };
+    const center = new google.maps.LatLng(state.coordinates.lat, state.coordinates.lon);
     if (state.isNewPhoto) {
-      viewOptions.zoom = getZoom(center);
+      map.setZoom(getZoom(center));
     }
-    map.setView(viewOptions);
-
-    map.entities.clear();
-    map.entities.push(new Microsoft.Maps.Pushpin(center));
+    map.panTo(center);
+    pushpin.setPosition(center);
   }
 });
 
 // Listen to options changes to detect changes in theme
-// Completely dispose/recreate the map if the map type id needs to change
-// Note: Bing maps has bugs with map.value.setMapType(), which is why I have to do this
 optionsStore.$subscribe((mutation, state)  => { 
-  let newType = state.darkTheme ? Microsoft.Maps.MapTypeId.aerial : Microsoft.Maps.MapTypeId.road;
-  let opts = map.getOptions();
-
-  if (opts.mapTypeId !== newType) {
-    const center = map.getCenter();
-    opts.mapTypeId = state.darkTheme ? Microsoft.Maps.MapTypeId.aerial : Microsoft.Maps.MapTypeId.road;
-    map = new Microsoft.Maps.Map(document.getElementById("map"), opts);
-    map.entities.push(new Microsoft.Maps.Pushpin(center));
-    Microsoft.Maps.Events.addHandler(map, 'click', handleMapClick);
-  }
+  map.setMapTypeId(state.darkTheme ? darkThemeOption : lightThemeOption);
 });
 </script>
 
@@ -105,5 +85,6 @@ optionsStore.$subscribe((mutation, state)  => {
 #map {
     height: calc(100vh - 256px);
     max-height: calc(100vh - 256px);
+    max-width: none;
 }
 </style>
