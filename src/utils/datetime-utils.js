@@ -35,13 +35,10 @@ module.exports = {
   },
 
   offsetDatetime: function(off, date, time) {
-    let localOffset = off;
-    if (typeof localOffset === 'string' || localOffset instanceof String) {
-      localOffset = module.exports.decodeOffset(localOffset);
-    }
+    let offset = module.exports.decodeOffset(String(off));
 
-    const offsetMinutes = Number(`${localOffset.sign}${localOffset.minutes}`);
-    const offsetHours = Number(`${localOffset.sign}${localOffset.hours}`);
+    const offsetMinutes = Number(`${offset.sign}${offset.minutes}`);
+    const offsetHours = Number(`${offset.sign}${offset.hours}`);
     const totalOffsetMills = (offsetHours * 60 + offsetMinutes) * 60 * 1000;
 
     const adjustedMillis = Date.parse(`${date} ${time}`) + (totalOffsetMills * -1);
