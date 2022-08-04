@@ -9,7 +9,7 @@
     </v-col>
     <v-col cols="12" md="4" class="text-right">
       <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
-      <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? {} : { click: saveMetadata }">
+      <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? { click: () => { dialog = true } } : { click: saveMetadata }">
         <span v-if="!saving && !saveComplete">Save</span>
         <v-progress-circular 
           v-if="saving && !saveComplete" 
@@ -19,7 +19,7 @@
           :width="3">
         </v-progress-circular>
         <v-icon v-if="!saving && saveComplete" size="large" color="green-lighten-4">mdi-check-bold</v-icon>
-        <v-dialog v-model="dialog" activator="parent" v-if="saveWarningEnabled">
+        <v-dialog v-model="dialog" v-if="saveWarningEnabled">
           <v-card title="Confirm Save">
             <v-card-text>
               <b>Saving metadata cannot be undone</b><br>
