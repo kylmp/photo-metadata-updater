@@ -127,14 +127,14 @@ import axios from 'axios'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useOptionsStore } from '../../stores/optionsStore'
-import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore'
+import { usePhotoListStore } from '../../stores/photoListStore';
 
 const props = defineProps(['metadata']);
 
-const geotaggedPhotoStore = useGeotaggedPhotoStore();
 const coordinatesStore = useCoordinatesStore();
 const alertStore = useAlertStore();
 const optionsStore = useOptionsStore();
+const photoListStore = usePhotoListStore();
 const form = ref(null);
 const saving = ref(false);
 const saveComplete = ref(false);
@@ -183,12 +183,6 @@ const coordinatesUpdate = () => {
   coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
 }
 
-const geotagPhoto = (name, lat, lon) => {
-  if (lat != '0' || lon != '0') {
-    geotaggedPhotoStore.update(name);
-  }
-}
-
 const setFields = () => {
   elevation.value = props.metadata.elevation;
   longitude.value = props.metadata.coordinates.longitude;
@@ -213,12 +207,10 @@ const saveMetadata = async () => {
       "longitude": longitude.value,
       "tzOffset": offset.value,
     }
-    axios.post('/api/photo', updatedData).then(() => {
+    axios.post('/api/photo', updatedData).then((newMetadata) => {
       saving.value = false;
       saveComplete.value = true;
-      if (!props.metadata.isGeotagged) {
-        geotagPhoto(props.metadata.name, latitude.value, longitude.value);
-      }
+      photoListStore.updateItem(newMetadata.data);
       setTimeout(() => { saveComplete.value = false; }, 3000);
       alertStore.alert.success({message: "Photo updated", timeout: 3000})
     }).catch(err => {

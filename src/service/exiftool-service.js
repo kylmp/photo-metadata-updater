@@ -39,9 +39,10 @@ module.exports = {
       'createTime': time,
       'tzOffset': tzOffset,
       'resolution': exifDataMap.get('Image Size') || unknown,
-      'projection': exifDataMap.get('Projection Type') || unknown,
+      'projection': exifDataMap.get('Projection Type') || 'default',
       'coordinates': coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position')),
-      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') || '0'
+      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') || '0',
+      'type': exifDataMap.get('File Type Extension') || unknown
     };
     res.isGeotagged = (res.coordinates.latitude !== 0 && res.coordinates.longitude !== 0);
     return res;
@@ -57,7 +58,7 @@ module.exports = {
     if (shell.exec(command).code !== 0) {
       throw new Error('exiftool error');
     }
-    return 'success';
+    return await module.exports.getMetadata(metadata.file).catch(err => console.log(err));
   },
 
   isAvailable: function() {

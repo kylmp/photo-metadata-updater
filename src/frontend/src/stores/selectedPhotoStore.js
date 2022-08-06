@@ -4,8 +4,8 @@ import { defineStore } from 'pinia'
 export const useSelectedPhotoStore = defineStore('selectedPhotoStore', () => {
   const photo = ref('');
   
-  const update = (ph) => {
-    photo.value = ph;
+  const update = (selected) => {
+    photo.value = selected;
   }
 
   return { photo, update };

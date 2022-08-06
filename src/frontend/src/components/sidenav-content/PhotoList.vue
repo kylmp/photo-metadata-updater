@@ -11,6 +11,7 @@
       class="ml-2">
     </v-progress-circular>
   </v-list-subheader>
+  <batch-processing-launcher v-if="photos.length > 0" :disabled="loadingMetadata"/>
   <v-list-item
     v-for="(photo, i) in photos"
     :key="photo.name"
@@ -29,10 +30,11 @@
 <script setup>
 import axios from 'axios'
 import { ref } from 'vue'
+import BatchProcessingLauncher from '../batch-processing/BatchProcessingLauncher.vue'
 import { useDirectoryStore } from '../../stores/directoryStore';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSelectedPhotoStore } from '../../stores/selectedPhotoStore';
-import { useGeotaggedPhotoStore } from '../../stores/geotaggedPhotoStore';
+import { usePhotoListStore } from '../../stores/photoListStore';
 
 const photos = ref([]);
 const selection = ref([]);
@@ -40,25 +42,16 @@ const loadingMetadata = ref(false);
 const alertStore = useAlertStore();
 const directoryStore = useDirectoryStore();
 const selectedPhotoStore = useSelectedPhotoStore();
-const geotaggedPhotoStore = useGeotaggedPhotoStore();
+const photoListStore = usePhotoListStore();
 
 // Update sidenav list when directory changes
 directoryStore.$subscribe((mutation, state) => {
   updateList(state.directory);
 });
 
-// Add the globe icon to a photo when it gets geotagged
-geotaggedPhotoStore.$subscribe((mutation, state) => {
-  let updateIndex = -1;
-  for (let i = 0; i < photos.value.length; i++) {
-    if (photos.value[i].name === state.name) {
-      updateIndex = i;
-      break;
-    }
-  }
-  if (updateIndex >= 0) {
-    photos.value[updateIndex].isGeotagged = true;
-  }
+// Refresh list when metadata gets updated
+photoListStore.$subscribe(() => {
+  photos.value = photoListStore.getFullList();
 })
 
 const photoSelected = (index) => {
@@ -76,21 +69,15 @@ const updateList = async (directoryPath) => {
       }
       photos.value = result.data.sort((a, b) => a.name.localeCompare(b.name));
     }).catch((err) => { 
-      photos.value = [];
+      photoListStore.updateAll([]);
       const alertConfig = (err.response.status === 400) ?
         {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
         {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
       alertStore.alert.send(alertConfig);
     });
-  // Get photo list metadatas (slow - used for getting isGeotagged metadata to add globe icon)
+  // Get photo list with full metadata (slower)
   axios.get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true').then((result) => {
-      for (let photo in photos.value) {
-        for (let meta in result.data) {
-          if (photos.value[photo].name == result.data[meta].name) {
-            photos.value[photo].isGeotagged = result.data[meta].isGeotagged;
-          }
-        }
-      }
+      photoListStore.updateAll(result.data);
       loadingMetadata.value = false;
     }).catch(() => { 
       loadingMetadata.value = false;

@@ -22,3 +22,16 @@ onMounted(() => {
   alertStore.update(alert.value);
 });
 </script>
+
+<style>
+.v-overlay--active.v-tooltip > .v-overlay__content {
+  opacity: 0.95!important;
+  background: rgb(var(--v-theme-primary))!important;
+  transition: none!important;
+  color: #eee;
+}
+
+.false-leave-active.false-leave-to {
+  transition: none!important;
+}
+</style>
