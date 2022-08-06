@@ -8,30 +8,39 @@
       item-title="label"
       item-value="value"
       label="Match Type"
-      @update:modelValue="debounceUpdate"/>
+      @update:modelValue="typeChange"/>
   </v-col>
   <template v-if="!matchOption.hasTwoFields">
     <v-col sm="7">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="matchValue1"
         :label="props.label"
+        :placeholder="format"
         append-icon="mdi-window-close"
+        clear-icon="mdi-window-close"
+        @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate" 
         @click:append="$emit('delete', props.id)"/>
     </v-col>
   </template>
   <template v-if="matchOption.hasTwoFields">
     <v-col sm="3" class="pr-0">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="matchValue1" 
         label="Lower Bound"
+        :placeholder="format"
+        clear-icon="mdi-window-close"
+        @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate"/>
     </v-col>
     <v-col sm="4" class="pl-6">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field density="compact" variant="outlined" single-line clearable
         v-model="matchValue2" 
         label="Upper Bound"
+        :placeholder="format"
         append-icon="mdi-window-close"
+        clear-icon="mdi-window-close"
+        @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate" 
         @click:append="$emit('delete', props.id)"/>
     </v-col>
@@ -40,11 +49,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
 
 const emits = defineEmits(['update', 'delete']);
 const props = defineProps(['label', 'matchKey', 'id', 'debounce']);
 
+const inputId = `input-${props.id}`;
 const format = ref(props.matchKey.toUpperCase() === 'CREATEDATE' ? 'YYYY-MM-DD' : 'HH:MM:SS');
 const EQUALS = 'equals'
 const BEFORE = 'before';
@@ -68,6 +78,17 @@ const debounceUpdate = () => {
   debounceTimer = setTimeout(() => emits('update'), debounceDelay);
 }
 
+const typeChange = async () => {
+  await nextTick();
+  document.getElementById(inputId).focus();
+  debounceUpdate();
+}
+
+const isValidChar = (e) => {
+  if (/^[-:0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  e.preventDefault();
+}
+
 const convertDateTimeToNumber = (datetime) => {
   if (props.matchKey.toUpperCase() === 'CREATEDATE') {
     return new Date(datetime).getTime();
@@ -78,6 +99,8 @@ const convertDateTimeToNumber = (datetime) => {
   }
   return -1;
 }
+
+onMounted(() => document.getElementById(inputId).focus());
 
 const predicate = (metadata) => {
   const subject = convertDateTimeToNumber(metadata[props.matchKey]);

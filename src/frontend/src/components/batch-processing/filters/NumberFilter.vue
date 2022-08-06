@@ -8,14 +8,16 @@
       item-title="label"
       item-value="value"
       label="Match Type" 
-      @update:modelValue="debounceUpdate"/>
+      @update:modelValue="typeChange"/>
   </v-col>
   <template v-if="!matchOption.hasTwoFields">
     <v-col sm="7">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="matchValue1"
         label="Number"
+        placeholder="Number"
         append-icon="mdi-window-close"
+        clear-icon="mdi-window-close"
         @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate" 
         @click:append="$emit('delete', props.id)"/>
@@ -23,17 +25,21 @@
   </template>
   <template v-if="matchOption.hasTwoFields">
     <v-col sm="3" class="pr-0">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="matchValue1" 
         label="Lower Bound"
+        placeholder="Lower Bound"
+        clear-icon="mdi-window-close"
         @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate"/>
     </v-col>
     <v-col sm="4" class="pl-6">
-      <v-text-field density="compact" variant="outlined" single-line 
+      <v-text-field density="compact" variant="outlined" single-line clearable
         v-model="matchValue2" 
         label="Upper Bound"
+        placeholder="Upper Bound"
         append-icon="mdi-window-close"
+        clear-icon="mdi-window-close"
         @keypress="isValidChar($event)"
         @update:modelValue="debounceUpdate" 
         @click:append="$emit('delete', props.id)"/>
@@ -43,11 +49,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, nextTick, onMounted } from 'vue';
 
 const emits = defineEmits(['update', 'delete']);
 const props = defineProps(['label', 'matchKey', 'id', 'debounce']);
 
+const inputId = `input-${props.id}`;
 const EQ = 'equals';
 const NE = 'notequals';
 const GT = 'greaterthan';
@@ -72,28 +79,37 @@ const debounceUpdate = () => {
   debounceTimer = setTimeout(() => emits('update'), debounceDelay);
 }
 
+const typeChange = async () => {
+  await nextTick();
+  document.getElementById(inputId).focus();
+  debounceUpdate();
+}
+
 const isValidChar = (e) => {
   if (/^[+-\.0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
   e.preventDefault();
 }
 
+onMounted(() => document.getElementById(inputId).focus());
+
 const predicate = (metadata) => {
   // todo remove hardcoded exception to nested key
-  const subject = (props.matchKey.startsWith('coordinates')) ? metadata['coordinates'][props.matchKey.split('\.')[1]] : metadata[props.matchKey];
-  if (matchValue1.value === '' && matchValue2.value !== '') return subject <= matchValue2.value;
+  const subject = Number((props.matchKey.startsWith('coordinates')) ? metadata['coordinates'][props.matchKey.split('\.')[1]] : metadata[props.matchKey]);
+  if (matchValue1.value === '' && matchValue2.value !== '') return subject <= Number(matchValue2.value);
   if (matchValue1.value === '') return true;
+  const match1 = Number(matchValue1.value);
   switch (matchOption.value.value) {
     case EQ:
-      return subject == matchValue1.value;
+      return subject == match1;
     case NE:
-      return subject != matchValue1.value;
+      return subject != match1;
     case GT:
-      return subject > matchValue1.value;
+      return subject > match1;
     case LT: 
-      return subject < matchValue1.value;
+      return subject < match1;
     case BT: 
-      if (matchValue2.value === '') return subject >= matchValue1.value;
-      return subject >= matchValue1.value && subject <= matchValue2.value;
+      if (matchValue2.value === '') return subject >= match1;
+      return subject >= match1 && subject <= Number(matchValue2.value);
   }
 }
 

@@ -8,13 +8,15 @@
       item-title="label"
       item-value="value"
       label="Match Type" 
-      @update:modelValue="debounceUpdate"/>
+      @update:modelValue="typeChange"/>
   </v-col>
   <v-col sm="7">
-    <v-text-field density="compact" variant="outlined" single-line 
+    <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
       v-model="matchText"
       label="Match Text"
+      placeholder="Match Text"
       append-icon="mdi-window-close"
+      clear-icon="mdi-window-close"
       @update:modelValue="debounceUpdate" 
       @click:append="$emit('delete', props.id)"/>
   </v-col>
@@ -22,11 +24,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const emits = defineEmits(['update', 'delete']);
 const props = defineProps(['label', 'matchKey', 'id', 'debounce']);
 
+const inputId = `input-${props.id}`;
 const START = 'start';
 const END = 'end';
 const CONTAIN = 'contain';
@@ -45,6 +48,13 @@ const debounceUpdate = () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => emits('update'), debounceDelay);
 }
+
+const typeChange = () => {
+  document.getElementById(inputId).focus();
+  debounceUpdate();
+}
+
+onMounted(() => document.getElementById(inputId).focus());
 
 const predicate = (metadata) => {
   if (matchText.value === '') return true;

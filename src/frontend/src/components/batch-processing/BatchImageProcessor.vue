@@ -37,7 +37,7 @@
     </v-row>
   </div>
   <v-card-actions>
-    <v-btn color="img-name" block @click="$emit('closed')">Update Photos</v-btn>
+    <v-btn color="img-name" block @click="process">Update Photos</v-btn>
   </v-card-actions>
 </v-card>
 </template>
@@ -51,7 +51,7 @@ import NumberFilter from './filters/NumberFilter.vue';
 import DatetimeFilter from './filters/DatetimeFilter.vue';
 import MatcherFilter from './filters/MatcherFilter.vue';
 
-defineEmits(['closed']);
+const emit = defineEmits(['closed']);
 
 // Static
 const photoListStore = usePhotoListStore();
@@ -68,6 +68,10 @@ const filters = ref(new Map());
 const showTooltip = ref(false);
 
 setTimeout(() => showTooltip.value = true, 3000);
+
+const process = () => {
+  emit('closed');
+}
 
 const addFilter = () => {
   if (selectedFilter.value === '') return;
@@ -159,5 +163,9 @@ const filterComponentTypes = new Map([
 
 :deep(.v-input.v-select .v-field__input) {
   padding-right: 0;
+}
+
+:deep(.v-field__clearable) {
+  margin: 0;
 }
 </style>

@@ -8,10 +8,10 @@
       item-title="label"
       item-value="value"
       label="Match Type" 
-      @update:modelValue="debounceUpdate"/>
+      @update:modelValue="typeChange"/>
   </v-col>
   <v-col sm="7">
-    <v-select density="compact" variant="outlined" single-line 
+    <v-select :id="inputId" density="compact" variant="outlined" single-line 
       v-model="selectedOptions" 
       :items="props.options" 
       :label="props.optionsLabel" 
@@ -25,11 +25,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const emits = defineEmits(['update', 'delete']);
 const props = defineProps(['label', 'matchKey', 'id', 'debounce', 'options', 'optionsLabel']);
 
+const inputId = `input-${props.id}`;
 const ONE = 'one';
 const NONE = 'none';
 const matchOptions = [
@@ -46,6 +47,13 @@ const debounceUpdate = () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => emits('update'), debounceDelay);
 }
+
+const typeChange = () => {
+  document.activeElement.blur();
+  debounceUpdate();
+}
+
+onMounted(() => document.getElementById(inputId).click());
 
 const predicate = (metadata) => {
   if (selectedOptions.value.length === 0) return true;
