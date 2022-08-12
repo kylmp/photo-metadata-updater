@@ -33,7 +33,13 @@
 </template>
 
 <script setup>
-defineProps(['filteredList', 'showTooltip']);
+import { storeToRefs } from 'pinia'
+import { useBatchProcessingStore } from '../../../stores/batchProcessingStore';
+
+defineProps(['showTooltip']);
+
+const batchProcessingStore = useBatchProcessingStore();
+const { filteredList } = storeToRefs(batchProcessingStore);
 </script>
 
 <style scoped>

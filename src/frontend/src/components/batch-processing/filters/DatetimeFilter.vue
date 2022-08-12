@@ -55,7 +55,6 @@ const emits = defineEmits(['update', 'delete']);
 const props = defineProps(['label', 'matchKey', 'id', 'debounce']);
 
 const inputId = `input-${props.id}`;
-const format = ref(props.matchKey.toUpperCase() === 'CREATEDATE' ? 'YYYY-MM-DD' : 'HH:MM:SS');
 const EQUALS = 'equals'
 const BEFORE = 'before';
 const AFTER = 'after';
@@ -67,6 +66,7 @@ const matchOptions = [
   {label: 'Between', value: BETWEEN, hasTwoFields: true}
 ];
 
+const format = ref(props.matchKey.toUpperCase() === 'CREATEDATE' ? 'YYYY-MM-DD' : 'HH:MM:SS');
 const matchOption = ref(matchOptions[0]);
 const matchValue1 = ref('');
 const matchValue2 = ref('');

@@ -1,13 +1,13 @@
 <template>
   <v-row>
-    <v-col cols="12" md="8">
+    <v-col sm="8" class="text-no-wrap">
       <div id="details-title" class="text-subtitle-2 mt-1">
         <span>Metadata for </span>
         <span class="text-img-name">{{metadata.name}}</span>
         <span class="text-resolution pl-2">({{metadata.size}}, {{metadata.resolution}})</span>
       </div>
     </v-col>
-    <v-col cols="12" md="4" class="text-right">
+    <v-col sm="4" class="text-right">
       <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
       <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? { click: () => { dialog = true } } : { click: saveMetadata }">
         <span v-if="!saving && !saveComplete">Save</span>
@@ -37,7 +37,7 @@
   <v-form ref="form" v-model="valid" lazy-validation>
     <v-container class="pa-0 ma-0">
       <v-row>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Local Date (YYYY-MM-DD)"
             placeholder="YYYY-MM-DD"
@@ -48,7 +48,7 @@
             hide-details="true"
           ></v-text-field>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Local Time (HH:MM:SS)"
             placeholder="HH:MM:SS"
@@ -59,7 +59,7 @@
             hide-details="true"
           ></v-text-field>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Timezone Offset (+/-HHMM)"
             placeholder="+0000"
@@ -80,7 +80,7 @@
           </template>
           </v-text-field>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Elevation (Meters)"
             placeholder="Elevation"
@@ -92,7 +92,7 @@
             suffix="m"
           ></v-text-field>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Latitude"
             placeholder="Latitude"
@@ -104,7 +104,7 @@
             @input="coordinatesUpdate"
           ></v-text-field>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col sm="4">
           <v-text-field
             label="Longitude"
             placeholder="Longitude"
@@ -163,7 +163,7 @@ const createDateRules = ref([
 ]);
 const createTime = ref('');
 const createTimeRules = ref([
-  v => /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/.test(v) || 'Create time format must be HH:MM:SS',
+  v => /^(?:(?:([01]?\d|2[0-3]):){1}([0-5]{1}\d{1}):)([0-5]{1}\d{1})$/.test(v) || 'Create time format must be HH:MM:SS',
 ]);
 const offset = ref('');
 const offsetRules = ref([
@@ -260,7 +260,7 @@ optionsStore.$subscribe((mutation, state) => {
 </script>
 
 <style scoped>
-.v-col-md-4 {
+.v-col-sm-4 {
     height: 58px;
 }
 :deep(.v-input--horizontal .v-input__append) {
