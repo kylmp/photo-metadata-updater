@@ -201,7 +201,7 @@ const saveMetadata = async () => {
   const result = await form.value.validate();
   if (result.valid === true) {
     const updatedData = {
-      "file": props.metadata.path,
+      "name": props.metadata.name,
       "date": createDate.value,
       "time": createTime.value,
       "elevation": elevation.value,

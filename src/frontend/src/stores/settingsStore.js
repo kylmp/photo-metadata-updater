@@ -3,12 +3,12 @@ import { defineStore } from 'pinia'
 
 export const useSettingsStore = defineStore('settingsStore', () => {
   const name = ref('Photo Metadata Updater');
-  const port = ref(8000);
+  const demo = ref(false);
   const regex = ref({});
   
   const update = (settings) => {
     name.value = settings.name;
-    port.value = settings.port;
+    demo.value = settings.demo;
     for (let reg of Object.keys(settings.regex)) {
       regex.value[reg] = new RegExp(settings.regex[reg])
     }
@@ -18,5 +18,5 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     return regex.value[key];
   }
 
-  return { name, port, regex, update, getRegex };
+  return { name, demo, regex, update, getRegex };
 });

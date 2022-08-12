@@ -32,7 +32,6 @@ module.exports = {
 
     let res = { 
       'name': exifDataMap.get('File Name') || unknown, 
-      'path': file,
       'size': exifDataMap.get('File Size') || unknown,
       'camera': exifDataMap.get('Camera Model Name') || unknown,
       'createDate': date,

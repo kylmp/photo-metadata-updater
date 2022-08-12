@@ -24,5 +24,5 @@ module.exports = {
 }
 
 function getBasicInfo(file) {
-  return {'path': file, 'name': utils.getPhotoNameFromFile(file)};
+  return {'name': utils.getPhotoNameFromFile(file)};
 }

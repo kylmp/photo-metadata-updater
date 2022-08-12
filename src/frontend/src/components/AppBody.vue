@@ -26,6 +26,7 @@ import MetadataDisplay from './body-content/MetadataDisplay.vue';
 import ImageDisplay from './body-content/ImageDisplay.vue';
 import MapDisplay from './body-content/MapDisplay.vue';
 import NoImageDisplay from './body-content/NoImageDisplay.vue';
+import { useSettingsStore } from '../stores/settingsStore';
 import { useSelectedPhotoStore } from '../stores/selectedPhotoStore';
 import { useDirectoryStore } from '../stores/directoryStore';
 import { useCoordinatesStore } from '../stores/coordinatesStore';
@@ -33,6 +34,7 @@ import { useCoordinatesStore } from '../stores/coordinatesStore';
 const selectedPhotoStore = useSelectedPhotoStore();
 const directoryStore = useDirectoryStore();
 const coordinatesStore = useCoordinatesStore();
+const settingsStore = useSettingsStore();
 const metadata = ref({});
 const noImage = ref(true);
 const noImageType = ref('unselected');
@@ -43,9 +45,16 @@ directoryStore.$subscribe(() => {
   noImageType.value = 'unselected';
 });
 
+// Update to demo mode view if enabled
+settingsStore.$subscribe((mutation, state) => {
+  if (state.demo) {
+    noImageType.value = 'demo';
+  }
+});
+
 // Fetch photo metadata when selected image changes
 selectedPhotoStore.$subscribe((mutation, state) => {
-  axios.get('/api/photo?file='+encodeURI(state.photo.path)).then(res => {
+  axios.get('/api/photo?name='+encodeURI(state.photo.name)).then(res => {
     metadata.value = res.data;
     noImage.value = false;
     coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude, true);

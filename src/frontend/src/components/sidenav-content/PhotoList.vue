@@ -56,7 +56,7 @@ photoListStore.$subscribe(() => {
 
 const photoSelected = (index) => {
   const selected = photos.value[index];
-  selectedPhotoStore.update({name: selected.name, path: selected.path});
+  selectedPhotoStore.update({name: selected.name});
 }
 
 const updateList = async (directoryPath) => {

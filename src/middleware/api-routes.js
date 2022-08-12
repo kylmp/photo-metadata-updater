@@ -7,10 +7,12 @@ const bingMapsApi = require('../service/bing-maps-api-service');
 const imgFolder = require('./image-folder');
 const regex = require('../constants/regex');
 
+var currentDir = '';
+
 router.get('/settings', function(req, res) {
   const settings = {
     name: process.env.APP_NAME,
-    port: process.env.APP_PORT,
+    demo: (process.env.DEMO_MODE === 'true') ? true : false,
     regex: regex.getAllStrings()
   }
   res.send(settings);
@@ -20,11 +22,12 @@ router.get('/settings', function(req, res) {
 // If file query param: Get a single photo metadata
 router.get('/photo', async function (req, res) {
   const directory = req.query.dir || '';
-  const photoFile = req.query.file || '';
+  const photoName = req.query.name || '';
   const withMetadata = req.query.metadata || false;
   if (directory !== '') {
-    directoryService.getPhotoList(directory, withMetadata).then(photoList => {
-      imgFolder.setPath(directory);
+    currentDir = (process.env.DEMO_MODE === 'true') ? process.env.DEMO_DIR : directory;
+    directoryService.getPhotoList(currentDir, withMetadata).then(photoList => {
+      imgFolder.setPath(currentDir);
       res.send(photoList);
     }).catch(err => { 
       if ((typeof err === 'string' || err instanceof String) && err.includes("No such file or directory")) {
@@ -34,8 +37,9 @@ router.get('/photo', async function (req, res) {
       }
     });
   }
-  else if (photoFile !== '') {
-    directoryService.getPhotoMetadata(photoFile).then(photoMetadata => {
+  else if (photoName !== '') {
+    const fullPhotoPath = `${currentDir}/${photoName}`;
+    directoryService.getPhotoMetadata(fullPhotoPath).then(photoMetadata => {
       res.status(200).send(photoMetadata);
     }).catch(err => { 
       if ((typeof err === 'string' || err instanceof String) && err.includes("File not found")) {
@@ -52,7 +56,8 @@ router.get('/photo', async function (req, res) {
 
 // Update a photos metadata
 router.post('/photo', function (req, res) {
-  const metadata = req.body;
+  let metadata = req.body;
+  metadata.file = `${currentDir}/${metadata.name}`;
   if (!datetimeUtils.isValidDate(metadata.date)) {
     res.status(400).send('invalid date');
   }
