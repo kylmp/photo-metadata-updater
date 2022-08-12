@@ -33,33 +33,32 @@ function create_github_release() {
   rm $scriptdir/release-notes.txt
 }
 
+function build_distribution_zip() {
+  echo "Creating dist zip for $2"
+  mv $scriptdir/photo-metadata-updater-$2 $scriptdir/release-build-dir/photo-metadata-updater
+  mkdir $PWD/photo-metadata-updater
+  cp -R $scriptdir/release-build-dir/* $PWD/photo-metadata-updater
+  zip -qr $scriptdir/$1/photo-metadata-updater-$2.zip photo-metadata-updater/
+  rm -rf $PWD/photo-metadata-updater
+  rm $scriptdir/release-build-dir/photo-metadata-updater
+}
+
 function build_release() {
   echo -e "\n\nBuilding frontend"
   npm run --prefix $scriptdir/../src/frontend build
-  echo -e "\nFrontend built"
+  echo -e "\nFrontend built\n"
 
-  echo -e "Creating executables"
-  pkg $scriptdir/../photo-metadata-updater.js --config $scriptdir/../package.json --target macos,linux --out-path $scriptdir
+  echo -e "Creating executables\n"
+  pkg $scriptdir/../photo-metadata-updater.js --config $scriptdir/../package.json --target node18-linux-x64,node18-linux-arm64,node18-macos-x64,node18-macos-arm64 --out-path $scriptdir
 
-  echo "Creating version folder"
+  echo -e "Creating version folder\n"
   [ -d "$scriptdir/$1" ] && rm -rf $scriptdir/$1
   mkdir $scriptdir/$1
 
-  echo "Creating macos zip file"
-  mv $scriptdir/photo-metadata-updater-macos $scriptdir/release-build-dir/photo-metadata-updater
-  mkdir $PWD/photo-metadata-updater
-  cp -R $scriptdir/release-build-dir/* $PWD/photo-metadata-updater
-  zip -qr $scriptdir/$1/photo-metadata-updater-macos.zip photo-metadata-updater/
-  rm -rf $PWD/photo-metadata-updater
-  rm $scriptdir/release-build-dir/photo-metadata-updater
-
-  echo "Creating linux zip file"
-  mv $scriptdir/photo-metadata-updater-linux $scriptdir/release-build-dir/photo-metadata-updater
-  mkdir $PWD/photo-metadata-updater
-  cp -R $scriptdir/release-build-dir/* $PWD/photo-metadata-updater
-  zip -qr $scriptdir/$1/photo-metadata-updater-linux.zip photo-metadata-updater/
-  rm -rf $PWD/photo-metadata-updater
-  rm $scriptdir/release-build-dir/photo-metadata-updater
+  build_distribution_zip $1 "macos-arm64"
+  build_distribution_zip $1 "macos-x64"
+  build_distribution_zip $1 "linux-arm64"
+  build_distribution_zip $1 "linux-x64"
 
   echo
   read -p "Update version number, create tag, and draft github release? [y/n]: " -n 1 -r
