@@ -8,15 +8,22 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import AppHeader from './components/AppHeader.vue';
 import AppBody from './components/AppBody.vue';
 import AppSideNav from './components/AppSideNav.vue';
 import GlobalAlert from './components/global-components/Alert.vue';
 import { useAlertStore } from './stores/alertStore';
+import { useSettingsStore } from './stores/settingsStore';
 import { ref, onMounted } from 'vue';
 
+const settingsStore = useSettingsStore();
 const alertStore = useAlertStore();
 const alert = ref(null);
+
+axios.get('/api/settings').then(res => {
+  settingsStore.update(res.data);
+})
 
 onMounted(() => {
   alertStore.update(alert.value);

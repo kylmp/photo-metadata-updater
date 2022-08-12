@@ -1,3 +1,5 @@
+const regex = require('../constants/regex');
+
 module.exports = {
   parseDatetime: function(datetime) {
     let res = { "date": "1970-01-01", "time": "00:00:00", "datetime": "1970-01-01 00:00:00" };
@@ -60,15 +62,15 @@ module.exports = {
   },
 
   isValidOffset: function(offset) {
-    return /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(offset);
+    return regex.get('timezone').test(offset);
   },
 
   isValidDate: function(date) {
-    return /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(date);
+    return regex.get('date').test(date);
   },
 
   isValidTime: function(time) {
-    return /^(?:(?:([01]?\d|2[0-3]):){1}([0-5]{1}\d{1}):)([0-5]{1}\d{1})$/.test(time);
+    return regex.get('time').test(time);
   }
 }
 

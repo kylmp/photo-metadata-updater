@@ -26,12 +26,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useSettingsStore } from '../../../stores/settingsStore';
 
 const emits = defineEmits(['delete']);
 const props = defineProps(['label', 'id', 'rules']);
+const settingsStore = useSettingsStore();
 
 const inputId = `input-${props.id}`;
-const relativeNumberRules = [v => /^[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)$/.test(v) || ''];
+const relativeNumberRules = [v => settingsStore.getRegex('number').test(v) || ''];
 const setValueRules = props.rules || relativeNumberRules;
 const ADJ = 'adj';
 const SET = 'set';

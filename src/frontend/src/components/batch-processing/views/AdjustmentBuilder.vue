@@ -20,10 +20,12 @@
 
 <script setup>
 import { ref, shallowRef, nextTick } from 'vue';
+import { useSettingsStore } from '../../../stores/settingsStore';
 import NumberAdjustment from '../adjustments/NumberAdjustment.vue';
 import DatetimeAdjustment from '../adjustments/DatetimeAdjustment.vue';
 import TimezoneAdjustment from '../adjustments/TimezoneAdjustment.vue';
 
+const settingsStore = useSettingsStore();
 const selectedAdjustment = ref('');
 const adjustmentRefs = ref(new Map());
 const adjustments = ref(new Map());
@@ -78,12 +80,12 @@ const calculateAdjustments = () => {
 const emits = { update: calculateAdjustments, delete: deleteAdjustment };
 const adjustmentOptions = ['Latitude', 'Longitude', 'Elevation', 'Date', 'Time', 'Timezone'];
 const adjustmentRules = new Map([
-  [adjustmentOptions[0], [v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || '', v => v <= 90 && v >= -90 || '']],
-  [adjustmentOptions[1], [v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || '', v => v <= 180 && v >= -180 || '']],
-  [adjustmentOptions[2], [v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || '']],
-  [adjustmentOptions[3], [v => /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(v) || '']],
-  [adjustmentOptions[4], [v => /^(?:(?:([01]?\d|2[0-3]):){1}([0-5]{1}\d{1}):)([0-5]{1}\d{1})$/.test(v) || '']],
-  [adjustmentOptions[5], [v => /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(v) || '']]
+  [adjustmentOptions[0], [v => settingsStore.getRegex('number').test(v) || '', v => v <= 90 && v >= -90 || '']],
+  [adjustmentOptions[1], [v => settingsStore.getRegex('number').test(v) || '', v => v <= 180 && v >= -180 || '']],
+  [adjustmentOptions[2], [v => settingsStore.getRegex('number').test(v) || '']],
+  [adjustmentOptions[3], [v => settingsStore.getRegex('date').test(v) || '']],
+  [adjustmentOptions[4], [v => settingsStore.getRegex('time').test(v) || '']],
+  [adjustmentOptions[5], [v => settingsStore.getRegex('timezone').test(v) || '']]
 ]);
 const adjustmentComponentTypes = new Map([
   [adjustmentOptions[0], { type: shallowRef(NumberAdjustment),   on: emits, props: {label:'Latitude'}}],

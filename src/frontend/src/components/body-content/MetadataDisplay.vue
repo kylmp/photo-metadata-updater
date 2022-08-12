@@ -128,6 +128,7 @@ import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useOptionsStore } from '../../stores/optionsStore'
 import { usePhotoListStore } from '../../stores/photoListStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 const props = defineProps(['metadata']);
 
@@ -135,6 +136,7 @@ const coordinatesStore = useCoordinatesStore();
 const alertStore = useAlertStore();
 const optionsStore = useOptionsStore();
 const photoListStore = usePhotoListStore();
+const settingsStore = useSettingsStore();
 const form = ref(null);
 const saving = ref(false);
 const saveComplete = ref(false);
@@ -145,29 +147,29 @@ const dialog = ref(false);
 const valid = ref(true);
 const elevation = ref('');
 const elevationRules = ref([
-  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Elevation must be a +/- decimal number',
+  v => settingsStore.getRegex('number').test(v) || 'Elevation must be a +/- decimal number',
 ]);
 const longitude = ref('');
 const longitudeRules = ref([
-  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Longitude must be a +/- decimal number',
+  v => settingsStore.getRegex('number').test(v) || 'Longitude must be a +/- decimal number',
   v => v <= 180 && v >= -180 || 'Longitude should be between -180 to 180',
 ]);
 const latitude = ref('');
 const latitudeRules = ref([
-  v => /^[-]?([0-9]+\.?[0-9]*|\.[0-9]+)?$/.test(v) || 'Latitude must be a +/- decimal number',
+  v => settingsStore.getRegex('number').test(v) || 'Latitude must be a +/- decimal number',
   v => v <= 90 && v >= -90 || 'Latitude should be between -90 to 90',
 ]);
 const createDate = ref('');
 const createDateRules = ref([
-  v => /^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$/.test(v) || 'Create date format must be YYYY-MM-DD',
+  v => settingsStore.getRegex('date').test(v) || 'Create date format must be YYYY-MM-DD',
 ]);
 const createTime = ref('');
 const createTimeRules = ref([
-  v => /^(?:(?:([01]?\d|2[0-3]):){1}([0-5]{1}\d{1}):)([0-5]{1}\d{1})$/.test(v) || 'Create time format must be HH:MM:SS',
+  v => settingsStore.getRegex('time').test(v) || 'Create time format must be HH:MM:SS',
 ]);
 const offset = ref('');
 const offsetRules = ref([
-  v => /^[+-]{1}[0-1]{1}[0-9]{1}[0-5]{1}[0-9]{1}$/.test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
+  v => settingsStore.getRegex('timezone').test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
 ]);
 
 const ensureValidCoordinates = () => {

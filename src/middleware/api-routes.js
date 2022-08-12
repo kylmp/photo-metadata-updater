@@ -5,6 +5,16 @@ const datetimeUtils = require('../utils/datetime-utils');
 const coordinatesUtils = require('../utils/coordinates-utils');
 const bingMapsApi = require('../service/bing-maps-api-service');
 const imgFolder = require('./image-folder');
+const regex = require('../constants/regex');
+
+router.get('/settings', function(req, res) {
+  const settings = {
+    name: process.env.APP_NAME,
+    port: process.env.APP_PORT,
+    regex: regex.getAllStrings()
+  }
+  res.send(settings);
+});
 
 // If dir  query param: Get list of all photos in a directory (if metadata=true load times are long)
 // If file query param: Get a single photo metadata
