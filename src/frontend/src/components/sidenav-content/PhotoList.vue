@@ -78,8 +78,9 @@ const updateList = async (directoryPath) => {
   // Get photo list with full metadata (slower)
   axios.get('/api/photo?dir='+encodeURI(directoryPath)+'&metadata=true').then((result) => {
       photoListStore.updateAll(result.data);
-      loadingMetadata.value = false;
     }).catch(() => { 
+      console.log('Error loading list metadata!')
+    }).finally(() => {
       loadingMetadata.value = false;
     });
 }

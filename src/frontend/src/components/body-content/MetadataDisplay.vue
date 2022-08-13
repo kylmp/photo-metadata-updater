@@ -9,7 +9,7 @@
     </v-col>
     <v-col sm="4" class="text-right">
       <v-btn flat height="32" color="background" @click="setFields">Reset</v-btn>
-      <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? { click: () => { dialog = true } } : { click: saveMetadata }">
+      <v-btn flat height="32" width="72" color="btn-save" v-on="saveWarningEnabled ? { click: warnBeforeSave } : { click: saveMetadata }">
         <span v-if="!saving && !saveComplete">Save</span>
         <v-progress-circular 
           v-if="saving && !saveComplete" 
@@ -181,8 +181,10 @@ const ensureValidCoordinates = () => {
 
 // Update coordinates store on coordinates changes (So the map can recieve updates)
 const coordinatesUpdate = () => {
-  ensureValidCoordinates();
-  coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
+  if (settingsStore.getRegex('number').test(latitude.value) && settingsStore.getRegex('number').test(longitude.value)) {
+    ensureValidCoordinates();
+    coordinatesStore.update(parseFloat(latitude.value), parseFloat(longitude.value));
+  }
 }
 
 const setFields = () => {
@@ -195,11 +197,29 @@ const setFields = () => {
   coordinatesUpdate();
 }
 
-const saveMetadata = async () => {
-  dialog.value = false;
-  saving.value = true;
+const validateBeforeContinue = async (continueFunction, skipOffset = false) => {
   const result = await form.value.validate();
-  if (result.valid === true) {
+  if (result.valid === true ||
+      skipOffset && result.errors.length === 1 && result.errors[0].errorMessages[0].startsWith('Offset')) {
+    continueFunction();
+  }
+  else {
+    const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
+    alertStore.alert.error({message: errorString, timeout: 10000});
+  }
+}
+
+const warnBeforeSave = () => {
+  validateBeforeContinue(() => {
+    alertStore.alert.clear();
+    dialog.value = true;
+  });
+}
+
+const saveMetadata = () => {
+  validateBeforeContinue(() => {
+    dialog.value = false;
+    saving.value = true;
     const updatedData = {
       "name": props.metadata.name,
       "date": createDate.value,
@@ -210,34 +230,31 @@ const saveMetadata = async () => {
       "tzOffset": offset.value,
     }
     axios.post('/api/photo', updatedData).then((newMetadata) => {
-      saving.value = false;
       saveComplete.value = true;
       photoListStore.updateItem(newMetadata.data);
       setTimeout(() => { saveComplete.value = false; }, 3000);
       alertStore.alert.success({message: "Photo updated", timeout: 3000})
     }).catch(err => {
       alertStore.alert.error(err);
+    }).finally(() => {
       saving.value = false;
-    })
-  }
-  else {
-    saving.value = false;
-    const errorString = result.errors.map(err => err.errorMessages[0]).join("\n");
-    alertStore.alert.error({message: errorString, timeout: 10000});
-  }
+    });
+  });
 }
 
 const calculateTimezone = () => {
-  gettingTimezone.value = true;
-  const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
-  const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
-  axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
-    offset.value = res.data;
-    gettingTimezone.value = false;
-  }).catch((err) => {
-    alertStore.alert.error(err.response.data);
-    gettingTimezone.value = false;
-  });
+  validateBeforeContinue(() => {
+    gettingTimezone.value = true;
+    const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
+    const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
+    axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
+      offset.value = res.data;
+    }).catch((err) => {
+      alertStore.alert.error(err.response.data);
+    }).finally(() => {
+      gettingTimezone.value = false;
+    });
+  }, true);
 }
 
 setFields();
