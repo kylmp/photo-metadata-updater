@@ -11,7 +11,7 @@ Node.js application with a Vue frontend. Runs on Mac/Unix systems, not tested on
 
 ### Please make backups of all photos before using the app and editing metadata, in case of unexpected errors.
 
-[Live Demo](http://pmu-demo.kylmp.com/) (Note: Batch update feature not yet fully functional)
+### [Live Demo](http://pmu-demo.kylmp.com/) (Note: Metadata is reset every 3 hours)
 
 # Recommended Dependency
 

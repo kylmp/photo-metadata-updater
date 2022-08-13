@@ -6,7 +6,7 @@ module.exports = {
     if (datetime !== undefined) {
       let split = datetime.split(" ");
       let date = split[0].replaceAll(":", "-");
-      let time = split[1];
+      let time = split[1].split('.')[0];
 
       // Remove timezone offset and utc formatting
       time = time.includes('+') ? time.split('+')[0] : time;
