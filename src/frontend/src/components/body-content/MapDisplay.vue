@@ -5,11 +5,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref, inject } from 'vue'
 import BingMap from './maps/BingMap.vue';
 import GoogleMap from './maps/GoogleMap.vue';
 
+const axios = inject('axios');
 const provider = ref('');
 const apikey = ref('');
 

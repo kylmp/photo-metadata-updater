@@ -20,8 +20,7 @@
 </template>
 
 <script setup>
-import axios from 'axios'
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import MetadataDisplay from './body-content/MetadataDisplay.vue';
 import ImageDisplay from './body-content/ImageDisplay.vue';
 import MapDisplay from './body-content/MapDisplay.vue';
@@ -31,6 +30,7 @@ import { useSelectedPhotoStore } from '../stores/selectedPhotoStore';
 import { useDirectoryStore } from '../stores/directoryStore';
 import { useCoordinatesStore } from '../stores/coordinatesStore';
 
+const axios = inject('axios');
 const selectedPhotoStore = useSelectedPhotoStore();
 const directoryStore = useDirectoryStore();
 const coordinatesStore = useCoordinatesStore();

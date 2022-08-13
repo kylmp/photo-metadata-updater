@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vite",
     "build": "vite build --emptyOutDir",
+    "build-bytesize": "vite build --emptyOutDir --mode bytesize",
     "dev": "vite",
     "preview": "vite preview"
   },

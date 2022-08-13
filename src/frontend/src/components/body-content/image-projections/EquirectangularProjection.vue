@@ -7,11 +7,12 @@ import '../../../assets/pannellum';
 import { onMounted, watch } from 'vue'
 
 const props = defineProps(['photoName']);
+const base = import.meta.env.VITE_BASE_URL || '';
 
 var panorama;
 var panoramaConfig = {
   "type": "equirectangular",
-  "panorama": `img/${props.photoName}`,
+  "panorama": `${base}/img/${props.photoName}`,
   "showZoomCtrl": false,
   "autoRotate": -10,
   "autoLoad": true
@@ -25,7 +26,7 @@ const buildPanorama = () => {
 }
 
 watch(() => props.photoName, (newPhoto) => {
-  panoramaConfig.panorama = `img/${newPhoto}`;
+  panoramaConfig.panorama = `${base}/img/${newPhoto}`;
   buildPanorama();
 });
 

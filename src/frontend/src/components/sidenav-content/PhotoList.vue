@@ -28,14 +28,14 @@
 </template>
 
 <script setup>
-import axios from 'axios'
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import BatchProcessingLauncher from '../batch-processing/BatchProcessingLauncher.vue'
 import { useDirectoryStore } from '../../stores/directoryStore';
 import { useAlertStore } from '../../stores/alertStore';
 import { useSelectedPhotoStore } from '../../stores/selectedPhotoStore';
 import { usePhotoListStore } from '../../stores/photoListStore';
 
+const axios = inject('axios');
 const photos = ref([]);
 const selection = ref([]);
 const loadingMetadata = ref(false);

@@ -8,15 +8,15 @@
 </template>
 
 <script setup>
-import axios from 'axios'
+import { ref, onMounted, inject } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import AppBody from './components/AppBody.vue';
 import AppSideNav from './components/AppSideNav.vue';
 import GlobalAlert from './components/global-components/Alert.vue';
 import { useAlertStore } from './stores/alertStore';
 import { useSettingsStore } from './stores/settingsStore';
-import { ref, onMounted } from 'vue';
 
+const axios = inject('axios');
 const settingsStore = useSettingsStore();
 const alertStore = useAlertStore();
 const alert = ref(null);

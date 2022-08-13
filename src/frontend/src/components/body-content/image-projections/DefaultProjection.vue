@@ -6,11 +6,11 @@
 import { ref, watch } from 'vue'
 
 const props = defineProps(['photoName']);
-
-const source = ref(`img/${props.photoName}`);
+const base = import.meta.env.VITE_BASE_URL || '';
+const source = ref(`${base}/img/${props.photoName}`);
 
 watch(() => props.photoName, (newPhoto) => {
-  source.value = `img/${newPhoto}`;
+  source.value = `${base}/img/${newPhoto}`;
 });
 </script>
 

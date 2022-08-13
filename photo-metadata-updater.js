@@ -28,6 +28,14 @@ if (bingApiKey === 'YOUR_BING_API_KEY') {
   console.log('Then, add your API key to the config.properties file and restart the application\n')
 }
 
+if (process.env.CORS_ORIGIN) {
+  const cors = require('cors')
+  const corsOptions = {
+    origin: process.env.CORS_ORIGIN
+  }
+  app.use(cors(corsOptions));
+}
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './public')));

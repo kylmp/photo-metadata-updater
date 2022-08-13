@@ -20,3 +20,4 @@ exiftool/
 releases/*
 !releases/build.sh
 !releases/release-build-dir.zip
+.env.bytesize

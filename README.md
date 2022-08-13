@@ -11,7 +11,7 @@ Node.js application with a Vue frontend. Runs on Mac/Unix systems, not tested on
 
 ### Please make backups of all photos before using the app and editing metadata, in case of unexpected errors.
 
-![Demo](https://github.com/kylmp/photo-metadata-updater/blob/master/demo.gif)
+[Live Demo](http://pmu-demo.kylmp.com/) (Note: Batch update feature not yet fully functional)
 
 # Recommended Dependency
 

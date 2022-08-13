@@ -122,14 +122,14 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import axios from 'axios'
+import { ref, watch, inject } from 'vue'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useOptionsStore } from '../../stores/optionsStore'
 import { usePhotoListStore } from '../../stores/photoListStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 
+const axios = inject('axios');
 const props = defineProps(['metadata']);
 
 const coordinatesStore = useCoordinatesStore();
