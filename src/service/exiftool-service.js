@@ -24,11 +24,8 @@ module.exports = {
       exifDataMap.set(exifLine[0].trim(), exifLine[1]);
     });
 
-    const locdatetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || defaultDate;
-    const gpsDatetime = exifDataMap.get('GPS Date/Time') || defaultDate;
+    const locdatetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || exifDataMap.get('Modify Date') || defaultDate;
     const {date, time, datetime} = datetimeUtils.parseDatetime(locdatetime);
-    const {datetime: utcDatetime} = datetimeUtils.parseDatetime(gpsDatetime);
-    const tzOffset = (utcDatetime === defaultDate) ? unknown : datetimeUtils.determineOffset(utcDatetime, datetime);
 
     let res = { 
       'name': exifDataMap.get('File Name') || unknown, 
@@ -36,7 +33,7 @@ module.exports = {
       'camera': exifDataMap.get('Camera Model Name') || unknown,
       'createDate': date,
       'createTime': time,
-      'tzOffset': tzOffset,
+      'tzOffset': determineTimezone(exifDataMap, datetime),
       'resolution': exifDataMap.get('Image Size') || unknown,
       'projection': exifDataMap.get('Projection Type') || 'default',
       'coordinates': coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position')),
@@ -71,6 +68,18 @@ function mapElevation(elevation) {
   return (split[2] === "Below") ? `-${value}` : value;
 }
 
+function determineTimezone(exifDataMap, createDate) {
+  // 1. Try to get from OffsetTime/OffsetTimeOriginal exif metadata
+  // 2. If not present, try to calculate offset from difference in GPS time (UTC) vs create date (local)
+  // 3. If GPS time not present, then set timezone offset to unknown as we cannot determine it
+  let timezoneOffset = exifDataMap.get('Offset Time Original') || exifDataMap.get('Offset Time Digitized') || exifDataMap.get('Offset Time') || unknown;
+  if (timezoneOffset === unknown) {
+    const gpsDatetime = datetimeUtils.parseDatetime(exifDataMap.get('GPS Date/Time') || defaultDate).datetime;
+    timezoneOffset = (gpsDatetime !== defaultDate) ? datetimeUtils.determineOffset(gpsDatetime, createDate) : unknown;
+  }
+  return timezoneOffset;
+}
+
 function buildElevationExifFields(elevation) {
   const direction = (elevation.charAt(0) === '-') ? "Below Sea Level" : "Above Sea Level"
   elevation = elevation.replaceAll('-', '');
@@ -86,12 +95,15 @@ function buildCoordinatesExifFields(lat, lon) {
 function buildDatetimeExifFields(date, time, timezoneOffset) {
   // Get values for local time
   const datetime = `${date} ${time}`;
-  const cmdLocal = `"-DateTimeOriginal=${datetime}" "-CreateDate=${datetime}"`;
+  const cmdLocal = `"-DateTimeOriginal=${datetime}" "-CreateDate=${datetime}" "-ModifyDate=${datetime}"`;
 
   // Get values for UTC time (GPS date/time tags should be in UTC)
   const {date: utcDate, time: utcTime} = datetimeUtils.offsetDatetime(timezoneOffset, date, time);
   const utcDatetime = `${utcDate} ${utcTime}`;
   const cmdGps = `"-GPSDateTime=${utcDatetime}" "-GPSDateStamp=${utcDate}" "-GPSTimeStamp=${utcTime}"`;
 
-  return `${cmdLocal} ${cmdGps}`;
+  // Set the timezone offset
+  const cmdOffset = `"-OffsetTimeOriginal=${timezoneOffset}" "-OffsetTime=${timezoneOffset}" "-OffsetTimeDigitized=${timezoneOffset}"`
+
+  return `${cmdLocal} ${cmdGps} ${cmdOffset}`;
 }
