@@ -9,7 +9,7 @@ export default defineConfig({
     vuetify({ autoImport: true }),
   ],
   build: {
-    outDir: path.resolve(__dirname, "../../public"),
+    outDir: path.resolve(__dirname, "../public"),
   },
   server: {
     port: 8080,

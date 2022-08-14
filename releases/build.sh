@@ -45,7 +45,7 @@ function build_distribution_zip() {
 
 function build_release() {
   echo -e "\n\nBuilding frontend"
-  npm run --prefix $scriptdir/../src/frontend build
+  npm run --prefix $scriptdir/../frontend build
   echo -e "\nFrontend built\n"
 
   echo -e "Creating executables\n"

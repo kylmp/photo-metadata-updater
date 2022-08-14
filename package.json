@@ -5,12 +5,12 @@
   "main": "photo-metadata-updater.js",
   "scripts": {
     "start": "node photo-metadata-updater",
-    "build-ui": "npm run --prefix ./src/frontend build",
-    "install-ui": "npm --prefix ./src/frontend install ./src/frontend",
-    "serve-ui": "npm run --prefix ./src/frontend serve",
+    "build-ui": "npm run --prefix ./frontend build",
+    "install-ui": "npm --prefix ./frontend install ./frontend",
+    "serve-ui": "npm run --prefix ./frontend serve",
     "build": "releases/build.sh"
   },
-  "author": "Kyle Rump",
+  "author": "klymp",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",

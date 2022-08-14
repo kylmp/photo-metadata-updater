@@ -1,6 +1,6 @@
 <template>
 <v-list density="compact" height="100%" class="pb-0 pt-0">
-  <v-list-subheader>Filtered Photos ({{filteredList.length}} items)</v-list-subheader>
+  <v-list-subheader>Filtered Photos ({{filteredList.length}} item{{filteredList.length == 1 ? '' : 's'}})</v-list-subheader>
   <v-list-item v-for="(photo, i) in filteredList"
     :title="photo.name"
     min-height="28">
