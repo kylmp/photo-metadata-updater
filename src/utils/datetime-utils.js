@@ -25,13 +25,13 @@ module.exports = {
   },
 
   encodeOffset: function(offset) {
-    return `${offset.sign}${pad(offset.hours)}${pad(offset.minutes)}`;
+    return `${offset.sign}${pad(offset.hours)}:${pad(offset.minutes)}`;
   },
 
   decodeOffset: function(offsetString) {
     return { 
       hours: Number(offsetString.substr(1, 2)), 
-      minutes: Number(offsetString.substr(3)), 
+      minutes: Number(offsetString.substr(4)), 
       sign: offsetString.charAt(0)
     };
   },
@@ -58,7 +58,7 @@ module.exports = {
     diff = Math.round(diff / 15) * 15; // round to nearest multiple of 15
     const diffHour = pad(Math.abs(Math.trunc(diff / 60)));
     const diffMins = pad(Math.abs(diff % 60));
-    return `${diff <= 0 ? '-' : '+'}${diffHour}${diffMins}`
+    return `${diff <= 0 ? '-' : '+'}${diffHour}:${diffMins}`
   },
 
   isValidOffset: function(offset) {

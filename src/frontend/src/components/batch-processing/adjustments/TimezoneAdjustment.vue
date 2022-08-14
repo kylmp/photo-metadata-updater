@@ -15,8 +15,8 @@
     <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
       v-model="adjustmentValue"
       label="Timezone Offset"
-      placeholder="+HHMM"
-      suffix="+HHMM"
+      placeholder="+HH:MM"
+      suffix="+HH:MM"
       :rules="adjustmentOption.rules"
       append-icon="mdi-window-close"
       clear-icon="mdi-window-close"

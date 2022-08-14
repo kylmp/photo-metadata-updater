@@ -37,7 +37,7 @@ If you want to contribute, instructions for local setup for development is in th
     - Date: Local date from when the photo was taken
     - Time: Local time from when the photo was taken - *NOT UTC Time*
     - Timezone Offset: The timezone offset between the local time and UTC time
-        * (e.g. Hawaii offset is -10 hours, and it is written as *-1000* using `+/-HHMM` notation)
+        * (e.g. Hawaii offset is -10 hours, and it is written as *-10:00* using `+/-HH:MM` notation)
     - Elevation: Elevation in meters of where photo was taken (negative or positive, including decimal values)
     - Latitude: GPS latitude of where the photo was taken
     - Longitude: GPS longitude of where the photo was taken

@@ -61,7 +61,7 @@
         </v-col>
         <v-col sm="4">
           <v-text-field
-            label="Timezone Offset (+/-HHMM)"
+            label="Timezone Offset (+/-HH:MM)"
             placeholder="+0000"
             v-model="offset"
             :rules="offsetRules"
@@ -169,7 +169,7 @@ const createTimeRules = ref([
 ]);
 const offset = ref('');
 const offsetRules = ref([
-  v => settingsStore.getRegex('timezone').test(v) || 'Offset must be in format (+/-)HHMM\nTIP: click the search icon to calculate timezone offset from coordinates',
+  v => settingsStore.getRegex('timezone').test(v) || 'Offset must be in format (+/-)HH:MM\nTIP: click the search icon to calculate timezone offset from coordinates',
 ]);
 
 const ensureValidCoordinates = () => {
