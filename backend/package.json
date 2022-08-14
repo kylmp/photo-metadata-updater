@@ -1,0 +1,23 @@
+{
+  "author": "klymp",
+  "name": "photo-metadata-updater-backend",
+  "version": "1.2.0",
+  "description": "Backend (nodejs) - Update photo metadata easily",
+  "private": true,
+  "main": "photo-metadata-updater.js",
+  "scripts": {
+    "start": "node photo-metadata-updater",
+    "build-ui": "npm run --prefix ./frontend build",
+    "install-ui": "npm --prefix ./frontend install ./frontend",
+    "serve-ui": "npm run --prefix ./frontend serve",
+    "build": "releases/build.sh"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.17.1",
+    "shelljs": "^0.8.4"
+  }
+}

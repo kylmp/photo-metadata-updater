@@ -1,6 +1,8 @@
 {
-  "name": "frontend",
+  "author": "klymp",
+  "name": "photo-metadata-updater-frontend",
   "version": "1.2.0",
+  "description": "Frontend (vue/vuetify) - Update photo metadata easily",
   "private": true,
   "scripts": {
     "serve": "vite",

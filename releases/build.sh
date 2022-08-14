@@ -14,10 +14,12 @@ scriptdir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 function create_github_release() {
   echo -e "\n\nUpdating version numbers"
-  jq '.version = "'"$1"'"' $scriptdir/../package.json > $scriptdir/package.updated.backend.json
-  mv $scriptdir/package.updated.backend.json $scriptdir/../package.json
-  jq '.version = "'"$1"'"' $scriptdir/../src/frontend/package.json > $scriptdir/package.updated.frontend.json
-  mv $scriptdir/package.updated.frontend.json $scriptdir/../src/frontend/package.json
+  jq '.version = "'"$1"'"' $scriptdir/../package.json > $scriptdir/package.updated.root.json
+  mv $scriptdir/package.updated.root.json $scriptdir/../package.json
+  jq '.version = "'"$1"'"' $scriptdir/../backend/package.json > $scriptdir/package.updated.backend.json
+  mv $scriptdir/package.updated.backend.json $scriptdir/../backend/package.json
+  jq '.version = "'"$1"'"' $scriptdir/../frontend/package.json > $scriptdir/package.updated.frontend.json
+  mv $scriptdir/package.updated.frontend.json $scriptdir/../frontend/package.json
 
   git add . && git commit -m "Version bump - $1"
   git push
@@ -49,7 +51,7 @@ function build_release() {
   echo -e "\nFrontend built\n"
 
   echo -e "Creating executables\n"
-  pkg $scriptdir/../photo-metadata-updater.js --config $scriptdir/../package.json --target node18-linux-x64,node18-linux-arm64,node18-macos-x64,node18-macos-arm64 --out-path $scriptdir
+  pkg $scriptdir/../backend/photo-metadata-updater.js --config $scriptdir/../package.json
 
   echo -e "Creating version folder\n"
   [ -d "$scriptdir/$1" ] && rm -rf $scriptdir/$1

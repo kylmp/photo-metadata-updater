@@ -38,7 +38,7 @@ if (process.env.CORS_ORIGIN) {
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, './public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', require('./src/middleware/api-routes'));
 app.use('/img', require('./src/middleware/image-validator'));
 app.use('/img', require('./src/middleware/image-folder'));

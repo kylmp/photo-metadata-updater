@@ -1,28 +1,21 @@
 {
+  "author": "klymp",
+  "license": "ISC",
   "name": "photo-metadata-updater",
   "version": "1.2.0",
   "description": "Update photo metadata easily",
-  "main": "photo-metadata-updater.js",
+  "private": true,
   "scripts": {
-    "start": "node photo-metadata-updater",
-    "build-ui": "npm run --prefix ./frontend build",
-    "install-ui": "npm --prefix ./frontend install ./frontend",
-    "serve-ui": "npm run --prefix ./frontend serve",
+    "start": "npm run --prefix ./backend start",
+    "install-backend": "npm --prefix ./backend install ./backend",
+    "build-frontend": "npm run --prefix ./frontend build",
+    "install-frontend": "npm --prefix ./frontend install ./frontend",
+    "serve-frontend": "npm run --prefix ./frontend serve",
     "build": "releases/build.sh"
   },
-  "author": "klymp",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^0.27.2",
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.1",
-    "express": "^4.17.1",
-    "shelljs": "^0.8.4"
-  },
   "pkg": {
-    "assets": [
-      "public/**/*"
-    ]
+    "targets": ["node18-linux-x64", "node18-linux-arm64", "node18-macos-x64", "node18-macos-arm64"],
+    "assets": ["./public/**/*"],
+    "outputPath": "./releases/"
   }
 }

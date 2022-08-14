@@ -19,10 +19,10 @@ In order to take advantage of timezone and map features, you need a [Bing maps A
 
 # Run App Guide
 
-1. Download the latest release: [Mac](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater-macos.zip) - [Linux](https://github.com/kylmp/photo-metadata-updater/releases/latest/download/photo-metadata-updater-linux.zip)
+1. Download the [latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest) based on your system
 2. Extract the zip to a new directory
 3. (Recommended, not required) Add your [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) to the `config.properties` file
-4. Double click the `photo-metadata-updater` file, you will see a console window open
+4. Run the `photo-metadata-updater` file, you will see a console window open
 5. In a browser, navigate to http://localhost:8000
 
 If you want to contribute, instructions for local setup for development is in the [wiki](https://github.com/kylmp/photo-metadata-updater/wiki/Local-Setup-(Development))
