@@ -33,7 +33,7 @@ const photoListStore = usePhotoListStore();
 const fullList = photoListStore.getFullList();
 const fileTypes = [... new Set(fullList.map(metadata => metadata.type))];
 const imageProjections = [... new Set(fullList.map(metadata => metadata.projection))];
-const tzOffsets = [... new Set(fullList.map(metadata => metadata.tzOffset))];
+const tzOffsets = [... new Set(fullList.map(metadata => metadata.timezone))];
 batchProcessingStore.setFilteredList(fullList);
 
 // Dynamic
@@ -77,12 +77,12 @@ const filterOptions = ['File Name', 'File Type', 'Latitude', 'Longitude', 'Eleva
 const filterComponentTypes = new Map([
   [filterOptions[0], { type: shallowRef(StringFilter),   on: emits, props: {label:'File Name', matchKey:'name'}}],
   [filterOptions[1], { type: shallowRef(MatcherFilter),  on: emits, props: {label:'File Type', matchKey:'type', options: fileTypes, optionsLabel: 'File Types'}}],
-  [filterOptions[2], { type: shallowRef(NumberFilter),   on: emits, props: {label:'Latitude', matchKey:'coordinates.latitude'}}],
-  [filterOptions[3], { type: shallowRef(NumberFilter),   on: emits, props: {label:'Longitude', matchKey:'coordinates.longitude'}}],
+  [filterOptions[2], { type: shallowRef(NumberFilter),   on: emits, props: {label:'Latitude', matchKey:'latitude'}}],
+  [filterOptions[3], { type: shallowRef(NumberFilter),   on: emits, props: {label:'Longitude', matchKey:'longitude'}}],
   [filterOptions[4], { type: shallowRef(NumberFilter),   on: emits, props: {label:'Elevation', matchKey:'elevation'}}],
   [filterOptions[5], { type: shallowRef(MatcherFilter),  on: emits, props: {label:'Projection', matchKey:'projection', options: imageProjections, optionsLabel: 'Projections'}}],
-  [filterOptions[6], { type: shallowRef(DatetimeFilter), on: emits, props: {label:'Date', matchKey:'createDate'}}],
-  [filterOptions[7], { type: shallowRef(DatetimeFilter), on: emits, props: {label:'Time', matchKey:'createTime'}}],
-  [filterOptions[8], { type: shallowRef(MatcherFilter),  on: emits, props: {label:'Timezone', matchKey:'tzOffset', options: tzOffsets, optionsLabel: 'Timezones'}}]
+  [filterOptions[6], { type: shallowRef(DatetimeFilter), on: emits, props: {label:'Date', matchKey:'date'}}],
+  [filterOptions[7], { type: shallowRef(DatetimeFilter), on: emits, props: {label:'Time', matchKey:'time'}}],
+  [filterOptions[8], { type: shallowRef(MatcherFilter),  on: emits, props: {label:'Timezone', matchKey:'timezone', options: tzOffsets, optionsLabel: 'Timezones'}}]
 ]);
 </script>

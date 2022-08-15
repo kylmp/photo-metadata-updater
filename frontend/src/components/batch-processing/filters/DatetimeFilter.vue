@@ -66,7 +66,7 @@ const matchOptions = [
   {label: 'Between', value: BETWEEN, hasTwoFields: true}
 ];
 
-const format = ref(props.matchKey.toUpperCase() === 'CREATEDATE' ? 'YYYY-MM-DD' : 'HH:MM:SS');
+const format = ref(props.matchKey.toUpperCase() === 'DATE' ? 'YYYY-MM-DD' : 'HH:MM:SS');
 const matchOption = ref(matchOptions[0]);
 const matchValue1 = ref('');
 const matchValue2 = ref('');
@@ -90,10 +90,10 @@ const isValidChar = (e) => {
 }
 
 const convertDateTimeToNumber = (datetime) => {
-  if (props.matchKey.toUpperCase() === 'CREATEDATE') {
+  if (props.matchKey.toUpperCase() === 'DATE') {
     return new Date(datetime).getTime();
   }
-  else if (props.matchKey.toUpperCase() === 'CREATETIME') {
+  else if (props.matchKey.toUpperCase() === 'TIME') {
     const parts = datetime.split(':');
     return (Number(parts[0] || 0) * 60 * 60) + (Number(parts[1] || 0) * 60) + Number(parts[2] || 0);
   }

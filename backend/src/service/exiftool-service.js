@@ -3,6 +3,7 @@ const path = require('path');
 const asyncShell = require('../utils/async-shell');
 const coordinatesUtils = require('../utils/coordinates-utils');
 const datetimeUtils = require('../utils/datetime-utils');
+const bingMapsApi = require('./bing-maps-api-service');
 
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
@@ -26,28 +27,34 @@ module.exports = {
 
     const locdatetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || exifDataMap.get('Modify Date') || defaultDate;
     const {date, time, datetime} = datetimeUtils.parseDatetime(locdatetime);
+    const {latitude, longitude} = coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position'));
 
     let res = { 
       'name': exifDataMap.get('File Name') || unknown, 
       'size': exifDataMap.get('File Size') || unknown,
-      'camera': exifDataMap.get('Camera Model Name') || unknown,
-      'createDate': date,
-      'createTime': time,
-      'tzOffset': determineTimezone(exifDataMap, datetime),
+      'date': date,
+      'time': time,
+      'timezone': determineTimezone(exifDataMap, datetime),
       'resolution': exifDataMap.get('Image Size') || unknown,
       'projection': exifDataMap.get('Projection Type') || 'default',
-      'coordinates': coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position')),
-      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') || '0',
-      'type': exifDataMap.get('File Type Extension') || unknown
+      'latitude': latitude,
+      'longitude': longitude,
+      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') || 0,
+      'type': exifDataMap.get('File Type Extension') || unknown,
+      'isGeotagged': latitude !== 0 && longitude !== 0
     };
-    res.isGeotagged = (res.coordinates.latitude !== 0 && res.coordinates.longitude !== 0);
     return res;
   },
 
   setMetadata: async function(metadata) {
+    if (metadata.timezone === 'calculate') {
+      metadata.timezone = datetimeUtils.decodeOffset(
+        bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
+    }
+
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);
     const elevation = buildElevationExifFields(metadata.elevation);
-    const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.tzOffset);
+    const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
 
     let command = `"${exiftool}" "${metadata.file}" ${options} ${coordinates} ${elevation} ${datetime}`;
     
@@ -65,7 +72,7 @@ module.exports = {
 function mapElevation(elevation) {
   let split = elevation.split(" ");
   let value = split[0];
-  return (split[2] === "Below") ? `-${value}` : value;
+  return Number((split[2] === "Below") ? `-${value}` : value);
 }
 
 function determineTimezone(exifDataMap, createDate) {
@@ -81,9 +88,9 @@ function determineTimezone(exifDataMap, createDate) {
 }
 
 function buildElevationExifFields(elevation) {
-  const direction = (elevation.charAt(0) === '-') ? "Below Sea Level" : "Above Sea Level"
-  elevation = elevation.replaceAll('-', '');
-  return `"-GPSAltitude=${elevation} m ${direction}"`;
+  const direction = (elevation < 0) ? "Below Sea Level" : "Above Sea Level"
+  elevation = (elevation < 0) ? elevation * -1 : elevation;
+  return `"-GPSAltitude=${elevation} m ${direction}" "-GPSAltitudeRef=${direction}"`;
 }
 
 function buildCoordinatesExifFields(lat, lon) {

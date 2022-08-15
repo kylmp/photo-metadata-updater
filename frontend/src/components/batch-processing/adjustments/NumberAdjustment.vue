@@ -66,9 +66,10 @@ const hasError = () => {
 const getAdjustment = () => {
   return {
     key: props.label.toLowerCase(), 
-    adjustment: Number(adjustmentValue.value) * (adjustmentOption.value.value === SUB ? -1 : 1),
+    adjustment: {value: Number(adjustmentValue.value) * (adjustmentOption.value.value === SUB ? -1 : 1)},
     type: adjustmentOption.value.adjustmentType,
-    hasError: hasError()
+    hasError: hasError(),
+    component: 'number'
   };
 }
 

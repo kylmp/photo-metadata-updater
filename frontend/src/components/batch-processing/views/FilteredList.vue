@@ -8,15 +8,15 @@
       <table>
         <tr>
           <td><b>Created:</b></td>
-          <td>{{photo.createDate}} {{photo.createTime}}</td>
+          <td>{{photo.date}} {{photo.time}}</td>
         </tr>
         <tr>
           <td><b>Timezone:</b></td>
-          <td>{{photo.tzOffset}}</td>
+          <td>{{photo.timezone}}</td>
         </tr>
         <tr>
           <td><b>Coordinates:&nbsp;&nbsp;</b></td>
-          <td>({{photo.coordinates.latitude.toFixed(4)}}, {{photo.coordinates.longitude.toFixed(4)}})</td>
+          <td>({{photo.latitude.toFixed(4)}}, {{photo.longitude.toFixed(4)}})</td>
         </tr>
         <tr>
           <td><b>Elevation:</b></td>

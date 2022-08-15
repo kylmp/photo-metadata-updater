@@ -21,11 +21,13 @@
 <script setup>
 import { ref, shallowRef, nextTick } from 'vue';
 import { useSettingsStore } from '../../../stores/settingsStore';
+import { useBatchProcessingStore } from '../../../stores/batchProcessingStore'
 import NumberAdjustment from '../adjustments/NumberAdjustment.vue';
 import DatetimeAdjustment from '../adjustments/DatetimeAdjustment.vue';
 import TimezoneAdjustment from '../adjustments/TimezoneAdjustment.vue';
 
 const settingsStore = useSettingsStore();
+const batchProcessingStore = useBatchProcessingStore();
 const selectedAdjustment = ref('');
 const adjustmentRefs = ref(new Map());
 const adjustments = ref(new Map());
@@ -57,23 +59,33 @@ const deleteAdjustment = async (id) => {
 //  - "set" values will always overwrite and take precedence over any "adj" values
 //  - Multiple "adj" values will be reduced/combined into one final adjustment amount
 const calculateAdjustments = () => {
-  const adjustments = Array.from(adjustmentRefs.value.values()).map(ref => ref.getAdjustment());
+  const rawAdjustments = Array.from(adjustmentRefs.value.values()).map(ref => ref.getAdjustment());
 
-  if (adjustments.some(item => item.hasError)) {
+  if (rawAdjustments.some(item => item.hasError)) {
     return null;
   }       
 
-  return Object.values(adjustments.reduce((reduced, add) => {
+  const adjustments = rawAdjustments.reduce((reduced, add) => {
     const currentValue = reduced[add.key];
     if (currentValue === undefined || (currentValue.type !== 'set' && add.type === 'set')) {
       delete add.hasError;
       reduced[add.key] = add;
     }
     else if (currentValue.type !== 'set') {
-      reduced[add.key].adjustment += add.adjustment;
+      if (add.component === 'number') {
+        reduced[add.key].adjustment.value += add.adjustment.value;
+      }
+      else {
+        const unit = Object.keys(add.adjustment)[0];
+        let combinedAmount = (reduced[add.key].adjustment[unit] || 0) + add.adjustment[unit];
+        reduced[add.key].adjustment[unit] = combinedAmount;
+      }
     }
     return reduced;
-  }, {}));
+  }, {});
+
+  batchProcessingStore.setAdjustments(adjustments);
+  return adjustments;
 }
 
 // Component definitions the adjustment options

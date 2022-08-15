@@ -45,16 +45,11 @@ const process = () => {
   if (adjustments === null) {
     alertStore.alert.error("Please fix the invalid adjustment fields");
   }
-  else if (adjustments.length === 0) {
+  else if (Object.keys(adjustments).length === 0) {
     alertStore.alert.send("No adjustments to make, add some!");
   }
   else {
-    // open the adjustment summary window
-    let r = '';
-    for (let adj of adjustments) {
-      r += adj.key + ' <' + adj.adjustment + '> ' + adj.type + '\n'
-    }
-    alertStore.alert.send(r);
+    // Open confirmation screen
   }
   //emit('closed');
 }

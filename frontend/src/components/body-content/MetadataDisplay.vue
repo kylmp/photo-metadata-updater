@@ -169,7 +169,7 @@ const createTimeRules = ref([
 ]);
 const offset = ref('');
 const offsetRules = ref([
-  v => settingsStore.getRegex('timezone').test(v) || 'Offset must be in format (+/-)HH:MM\nTIP: click the search icon to calculate timezone offset from coordinates',
+  v => settingsStore.getRegex('timezone').test(v) || 'Timezone offset must be in format (+/-)HH:MM\nTIP: click the search icon to calculate timezone offset from coordinates',
 ]);
 
 const ensureValidCoordinates = () => {
@@ -189,18 +189,18 @@ const coordinatesUpdate = () => {
 
 const setFields = () => {
   elevation.value = props.metadata.elevation;
-  longitude.value = props.metadata.coordinates.longitude;
-  latitude.value = props.metadata.coordinates.latitude;
-  createDate.value = props.metadata.createDate;
-  createTime.value = props.metadata.createTime;
-  offset.value = props.metadata.tzOffset;
+  longitude.value = props.metadata.longitude;
+  latitude.value = props.metadata.latitude;
+  createDate.value = props.metadata.date;
+  createTime.value = props.metadata.time;
+  offset.value = props.metadata.timezone;
   coordinatesUpdate();
 }
 
-const validateBeforeContinue = async (continueFunction, skipOffset = false) => {
+const validateBeforeContinue = async (continueFunction, skipTimezone = false) => {
   const result = await form.value.validate();
   if (result.valid === true ||
-      skipOffset && result.errors.length === 1 && result.errors[0].errorMessages[0].startsWith('Offset')) {
+      skipTimezone && result.errors.length === 1 && result.errors[0].errorMessages[0].startsWith('Timezone')) {
     continueFunction();
   }
   else {
@@ -220,22 +220,22 @@ const saveMetadata = () => {
   validateBeforeContinue(() => {
     dialog.value = false;
     saving.value = true;
-    const updatedData = {
+    const updatedData = [{
       "name": props.metadata.name,
       "date": createDate.value,
       "time": createTime.value,
       "elevation": elevation.value,
       "latitude": latitude.value,
       "longitude": longitude.value,
-      "tzOffset": offset.value,
-    }
+      "timezone": offset.value,
+    }];
     axios.post('/api/photo', updatedData).then((newMetadata) => {
       saveComplete.value = true;
-      photoListStore.updateItem(newMetadata.data);
+      photoListStore.updateItem(newMetadata.data[0]);
       setTimeout(() => { saveComplete.value = false; }, 3000);
       alertStore.alert.success({message: "Photo updated", timeout: 3000})
     }).catch(err => {
-      alertStore.alert.error(err);
+      alertStore.alert.error(err.response.data);
     }).finally(() => {
       saving.value = false;
     });

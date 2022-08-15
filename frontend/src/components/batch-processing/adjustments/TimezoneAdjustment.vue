@@ -54,7 +54,7 @@ var setValue = '';
 onMounted(() => document.getElementById(inputId).focus());
 
 const isValidChar = (e) => {
-  if (/^[+-\d]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  if (/^[:+-\d]+$/.test(String.fromCharCode(e.keyCode))) return true;
   e.preventDefault();
 }
 
@@ -78,9 +78,10 @@ const hasError = () => {
 const getAdjustment = () => {
   return {
     key: 'timezone', 
-    adjustment: (adjustmentOption.value.value === CAL) ? 'calculate' : adjustmentValue.value,
+    adjustment: {value: (adjustmentOption.value.value === CAL) ? 'calculate' : adjustmentValue.value},
     type: adjustmentOption.value.adjustmentType,
-    hasError: hasError()
+    hasError: hasError(),
+    component: 'timezone'
   };
 }
 

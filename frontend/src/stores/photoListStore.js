@@ -17,6 +17,12 @@ export const usePhotoListStore = defineStore('photoListStore', () => {
     }
   }
 
+  const updateItems = (newMetadata) => {
+    for (let metadata of newMetadata) {
+      updateItem(metadata);
+    }
+  }
+
   const getByName = (photoName) => {
     return photoList.value.get(photoName);
   }
@@ -25,5 +31,5 @@ export const usePhotoListStore = defineStore('photoListStore', () => {
     return Array.from(photoList.value.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  return { photoList, updateAll, updateItem, getByName, getFullList };
+  return { photoList, updateAll, updateItem, updateItems, getByName, getFullList };
 }); 

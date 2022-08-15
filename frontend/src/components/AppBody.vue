@@ -57,7 +57,7 @@ selectedPhotoStore.$subscribe((mutation, state) => {
   axios.get('/api/photo?name='+encodeURI(state.photo.name)).then(res => {
     metadata.value = res.data;
     noImage.value = false;
-    coordinatesStore.update(res.data.coordinates.latitude, res.data.coordinates.longitude, true);
+    coordinatesStore.update(res.data.latitude, res.data.longitude, true);
   })
   .catch((err) => { 
     noImage.value = true;

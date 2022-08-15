@@ -93,8 +93,7 @@ const isValidChar = (e) => {
 onMounted(() => document.getElementById(inputId).focus());
 
 const predicate = (metadata) => {
-  // todo remove hardcoded exception to nested key
-  const subject = Number((props.matchKey.startsWith('coordinates')) ? metadata['coordinates'][props.matchKey.split('\.')[1]] : metadata[props.matchKey]);
+  const subject = Number(metadata[props.matchKey]);
   if (matchValue1.value === '' && matchValue2.value !== '') return subject <= Number(matchValue2.value);
   if (matchValue1.value === '') return true;
   const match1 = Number(matchValue1.value);

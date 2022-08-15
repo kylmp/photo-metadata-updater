@@ -45,12 +45,14 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
+import { useSettingsStore } from '../../../stores/settingsStore';
 
 const emits = defineEmits(['delete']);
 const props = defineProps(['label', 'id', 'rules']);
+const settingsStore = useSettingsStore();
 
 const inputId = `input-${props.id}`;
-const relativeNumberRules = [v => /^[+-]?([0-9]+\.?[0-9]*|\.[0-9]+)$/.test(v) || ''];
+const relativeNumberRules = [v => settingsStore.getRegex('number').test(v) || ''];
 const setValueRules = props.rules || relativeNumberRules;
 const ADJ = 'adj';
 const SET = 'set';
@@ -62,12 +64,14 @@ const adjustmentOptions = [
   {label: 'Subtract', value: SUB, rules: relativeNumberRules, adjustmentType: ADJ, showUnits: true}
 ];
 const timeOptions = [
-  {label: 'Hours', multiplier: 3600},
-  {label: 'Minutes', multiplier: 60},
-  {label: 'Seconds', multiplier: 1}
+  {label: 'Hours', value: 'hour'},
+  {label: 'Minutes', value: 'min'},
+  {label: 'Seconds', value: 'sec'}
 ];
 const dateOptions = [
-  {label: 'Days', multiplier: 86400}
+  {label: 'Days', value: 'day'},
+  {label: 'Months', value: 'month'},
+  {label: 'Years', value: 'year'}
 ];
 const unitOptions = props.label.toUpperCase() === 'DATE' ? dateOptions : timeOptions;
 const format = props.label.toUpperCase() === 'DATE' ? 'YYYY-MM-DD' : 'HH:MM:SS';
@@ -86,7 +90,7 @@ const typeChange = async () => {
 }
 
 const getRelativeAdjustment = () => {
-  return Number(adjustmentValue.value) * (adjustmentOption.value.value === SUB ? -1 : 1) * unitOption.value.multiplier;
+  return Number(adjustmentValue.value) * (adjustmentOption.value.value === SUB ? -1 : 1);
 }
 
 const hasError = () => {
@@ -95,14 +99,20 @@ const hasError = () => {
 
 const getAdjustment = () => {
   const response = {
-    key: 'datetime', 
-    adjustment: 0,
+    key: props.label.toLowerCase(), 
+    adjustment: {},
     type: adjustmentOption.value.adjustmentType,
-    hasError: hasError()
+    hasError: hasError(),
+    component: 'datetime'
   };
-  if (!response.hasError) {
-    response.adjustment = (response.type === SET) ? adjustmentValue.value : getRelativeAdjustment();
-  }
+
+  if (adjustmentOption.value.adjustmentType === SET) {
+    response.adjustment.value = adjustmentValue.value;
+  }  
+  else {
+    response.adjustment[unitOption.value.value] = getRelativeAdjustment();
+  } 
+
   return response;
 }
 

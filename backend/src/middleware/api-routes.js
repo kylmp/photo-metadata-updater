@@ -54,32 +54,31 @@ router.get('/photo', async function (req, res) {
   }
 });
 
-// Update a photos metadata
-router.post('/photo', function (req, res) {
-  let metadata = req.body;
-  metadata.file = `${currentDir}/${metadata.name}`;
-  if (!datetimeUtils.isValidDate(metadata.date)) {
-    res.status(400).send('invalid date');
+// Update photo metadata [input and response should be lists of metadata]
+router.post('/photo', async function (req, res) {
+  if (!(req.body instanceof Array)) {
+    res.status(400).send('Expected array of metadata');
+    return;
   }
-  else if (!datetimeUtils.isValidTime(metadata.time)) {
-    res.status(400).send('invalid time');
-  }
-  else if (!datetimeUtils.isValidOffset(metadata.tzOffset)) {
-    res.status(400).send('invalid timezone offset');
-  }
-  else if (!coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {
-    res.status(400).send('invalid coordinates');
-  }
-  else if (!coordinatesUtils.isValidElevation(metadata.elevation)) {
-    res.status(400).send('invalid elevation');
-  }
-  else {
-    exifSvc.setMetadata(metadata).then((response) => {
-      res.status(200).send(response);
-    }).catch(err => {
+
+  const updatedMetadata = [];
+  for (let metadata of req.body) {
+    metadata.file = `${currentDir}/${metadata.name}`;
+
+    const errorMsg = validateMetadata(metadata);
+    if (errorMsg !== '') {
+      res.status(400).send(errorMsg);
+      return;
+    }
+    
+    const updated = await exifSvc.setMetadata(metadata).catch((err) => {
       res.status(500).send(err.message);
+      return;
     });
+
+    updatedMetadata.push(updated);
   }
+  res.status(200).send(updatedMetadata);
 });
 
 // Get map provider API key
@@ -103,26 +102,37 @@ router.get('/maps-api-key', async function (req, res) {
 
 // Calculate timezone offset from coordinates and datetime info
 router.get('/calculate-timezone', async function (req, res) {
-  const lon  = req.query.lon;
-  const lat  = req.query.lat;
-  const date = req.query.date;
-  const time = req.query.time;
-  if (!datetimeUtils.isValidDate(date)) {
-    res.status(400).send('invalid date');
-  }
-  else if (!datetimeUtils.isValidTime(time)) {
-    res.status(400).send('invalid time');
-  }
-  else if (!coordinatesUtils.isValidCoordinates(lat, lon)) {
-    res.status(400).send('invalid coordinates');
+  const metadata = {date: req.query.date, time: req.query.time, latitude: req.query.lat, longitude: req.query.lon};
+  const errorMsg = validateMetadata(metadata, ['timezone', 'elevation']);
+  if (errorMsg !== '') {
+    res.status(400).send(errorMsg);
   }
   else {
-    bingMapsApi.getTzOffsetFromCoordinates(lat, lon, date, time).then(offset => {
+    bingMapsApi.getTzOffsetFromCoordinates(req.query.lat, req.query.lon, req.query.date, req.query.time).then(offset => {
       res.status(200).send(datetimeUtils.encodeOffset(offset));
     }).catch(err => {
       res.status(500).send(err.message);
     });
   }
 });
+
+function validateMetadata(metadata, ignore = []) {
+  if (!ignore.includes('date') && !datetimeUtils.isValidDate(metadata.date)) {
+    return 'invalid date';
+  }
+  else if (!ignore.includes('time') && !datetimeUtils.isValidTime(metadata.time)) {
+    return 'invalid time';
+  }
+  else if (!ignore.includes('timezone') && !datetimeUtils.isValidOffset(metadata.timezone)) {
+    return 'invalid timezone offset';
+  }
+  else if (!ignore.includes('coordinates') && !coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {
+    return 'invalid coordinates';
+  }
+  else if (!ignore.includes('elevation') && !coordinatesUtils.isValidElevation(metadata.elevation)) {
+    return 'invalid elevation';
+  }
+  return '';
+}
 
 module.exports = router;
