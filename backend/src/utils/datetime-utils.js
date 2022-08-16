@@ -65,8 +65,13 @@ module.exports = {
     return regex.get('timezone').test(offset);
   },
 
-  isValidDate: function(date) {
-    return regex.get('date').test(date);
+  isValidDate: function(input) {
+    if (!regex.get('date').test(input)) {
+      return false;
+    }
+    const parts = input.split('-').map(part => parseInt(part, 10));
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return date.getFullYear() === parts[0] && date.getMonth() === (parts[1] - 1) && date.getDate() === parts[2];
   },
 
   isValidTime: function(time) {

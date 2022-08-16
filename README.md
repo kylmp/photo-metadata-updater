@@ -49,7 +49,7 @@ Tip 2: You can either click on the map itself to select new coordinates, or ente
 
 Tip 3: You can disable warnings, or change to dark mode in the options menu (top left corner)
 
-### EXIF/Metadata information
+# EXIF/Metadata information
 
 This application writes to the following EXIF metadata fields: 
 
@@ -57,22 +57,24 @@ This application writes to the following EXIF metadata fields:
 2. `Date/Time Original` (local time)
 3. `Modify Date` (local time)
 4. `GPS Altitude` (elevation in meters)
-5. `GPS Date/Time` (UTC datetime)
-6. `GPS Date` (UTC date)
-7. `GPS Time` (UTC time)
-8. `GPS Latitude` (decimal degrees)
-9. `GPS Longitude` (decimal degrees)
-10. `GPS Latitude Ref` (N or S)
-11. `GPS Longitude Ref` (W or E)
-12. `Offset Time` (timezone offset - corresponds to `Modify Date`)
-13. `Offset Time Original` (timezone offset - corresponds to `Date/Time Original`)
-14. `Offset Time Digitized` (timezone offset - corresponds to `Create Date`)
+5. `GPS Altitude Ref` (Above/Below Sea Level)
+6. `GPS Date/Time` (UTC datetime)
+7. `GPS Date` (UTC date)
+8. `GPS Time` (UTC time)
+9. `GPS Latitude` (decimal degrees)
+10. `GPS Longitude` (decimal degrees)
+11. `GPS Latitude Ref` (N or S)
+12. `GPS Longitude Ref` (W or E)
+13. `Offset Time` (timezone offset - corresponds to `Modify Date`)
+14. `Offset Time Original` (timezone offset - corresponds to `Date/Time Original`)
+15. `Offset Time Digitized` (timezone offset - corresponds to `Create Date`)
 
-# Libraries Used
+# Libraries/Resources Used
 
 * [Exiftool](https://exiftool.org/install.html) - Tool used to view and edit photo metadata
 * [Vue.js](https://vuejs.org/) - Frontend framework
 * [Vuetify](https://vuetifyjs.com/en/) - Vue UI library based on Google's material design
+* [Vite](https://vitejs.dev/) - Frontend tooling
 * [Pannellum](https://pannellum.org/) - Equirectangular image projection viewer
 * [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/v8-web-control/creating-and-hosting-map-controls/) - Map view and timezones API
 * [Axios](https://axios-http.com/docs/intro) - HTTP Client

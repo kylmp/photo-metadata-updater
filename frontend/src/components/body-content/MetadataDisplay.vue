@@ -161,7 +161,7 @@ const latitudeRules = ref([
 ]);
 const createDate = ref('');
 const createDateRules = ref([
-  v => settingsStore.getRegex('date').test(v) || 'Create date format must be YYYY-MM-DD',
+  v => isValidDate(v) || 'Create date format must be YYYY-MM-DD',
 ]);
 const createTime = ref('');
 const createTimeRules = ref([
@@ -255,6 +255,15 @@ const calculateTimezone = () => {
       gettingTimezone.value = false;
     });
   }, true);
+}
+
+const isValidDate = (input) => {
+  if (!settingsStore.getRegex('date').test(input)) {
+    return false;
+  }
+  const parts = input.split('-').map(part => parseInt(part, 10));
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  return date.getFullYear() === parts[0] && date.getMonth() === (parts[1] - 1) && date.getDate() === parts[2];
 }
 
 setFields();

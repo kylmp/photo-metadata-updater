@@ -88,6 +88,15 @@ const calculateAdjustments = () => {
   return adjustments;
 }
 
+const isValidDate = (input) => {
+  if (!settingsStore.getRegex('date').test(input)) {
+    return false;
+  }
+  const parts = input.split('-').map(part => parseInt(part, 10));
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
+  return date.getFullYear() === parts[0] && date.getMonth() === (parts[1] - 1) && date.getDate() === parts[2];
+}
+
 // Component definitions the adjustment options
 const emits = { update: calculateAdjustments, delete: deleteAdjustment };
 const adjustmentOptions = ['Latitude', 'Longitude', 'Elevation', 'Date', 'Time', 'Timezone'];
@@ -95,7 +104,7 @@ const adjustmentRules = new Map([
   [adjustmentOptions[0], [v => settingsStore.getRegex('number').test(v) || '', v => v <= 90 && v >= -90 || '']],
   [adjustmentOptions[1], [v => settingsStore.getRegex('number').test(v) || '', v => v <= 180 && v >= -180 || '']],
   [adjustmentOptions[2], [v => settingsStore.getRegex('number').test(v) || '']],
-  [adjustmentOptions[3], [v => settingsStore.getRegex('date').test(v) || '']],
+  [adjustmentOptions[3], [v => isValidDate(v) || '']],
   [adjustmentOptions[4], [v => settingsStore.getRegex('time').test(v) || '']],
   [adjustmentOptions[5], [v => settingsStore.getRegex('timezone').test(v) || '']]
 ]);
