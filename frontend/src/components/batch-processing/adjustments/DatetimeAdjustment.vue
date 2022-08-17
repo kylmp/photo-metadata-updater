@@ -12,23 +12,24 @@
   </v-col>
   <template v-if="!adjustmentOption.showUnits">
     <v-col sm="7">
-      <v-text-field :id="inputId" density="compact" variant="outlined" single-line 
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="adjustmentValue"
         :label="placeholder"
         :placeholder="placeholder"
-        :suffix="placeholder"
         :rules="adjustmentOption.rules"
         append-icon="mdi-window-close"
+        clear-icon="mdi-window-close"
         @click:append="$emit('delete', props.id)"/>
     </v-col>
   </template>
   <template v-if="adjustmentOption.showUnits">
     <v-col sm="3">
-      <v-text-field :id="inputId" density="compact" variant="outlined" single-line
+      <v-text-field :id="inputId" density="compact" variant="outlined" single-line clearable
         v-model="adjustmentValue"
         :label="placeholder"
         :placeholder="placeholder"
-        :rules="adjustmentOption.rules"/>
+        :rules="adjustmentOption.rules"
+        clear-icon="mdi-window-close"/>
     </v-col>
     <v-col sm="4">
       <v-select density="compact" variant="outlined" single-line return-object 
@@ -65,8 +66,8 @@ const adjustmentOptions = [
 ];
 const timeOptions = [
   {label: 'Hours', value: 'hour'},
-  {label: 'Minutes', value: 'min'},
-  {label: 'Seconds', value: 'sec'}
+  {label: 'Minutes', value: 'minute'},
+  {label: 'Seconds', value: 'second'}
 ];
 const dateOptions = [
   {label: 'Days', value: 'day'},
@@ -80,10 +81,21 @@ const adjustmentOption = ref(adjustmentOptions[0]);
 const adjustmentValue = ref('');
 const unitOption = ref(unitOptions[0]);
 const placeholder = ref(format);
+var state = {setText: '', adjText: '', previous: SET};
 
 onMounted(() => document.getElementById(inputId).focus());
 
 const typeChange = async () => {
+  if (state.previous === SET && adjustmentOption.value.adjustmentType === ADJ) {
+    state.setText = adjustmentValue.value;
+    adjustmentValue.value = state.adjText;
+    state.previous = ADJ;
+  }
+  else if (state.previous === ADJ && adjustmentOption.value.adjustmentType === SET) {
+    state.adjText = adjustmentValue.value;
+    adjustmentValue.value = state.setText;
+    state.previous = SET;
+  }
   placeholder.value = (adjustmentOption.value.adjustmentType === SET) ? format : 'Number';
   await nextTick();
   document.getElementById(inputId).focus();

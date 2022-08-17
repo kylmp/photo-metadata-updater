@@ -7,13 +7,13 @@
     <v-col sm="9" class="batch-process-col">
       <div id="overflow-container">
         <v-container id="filter-container" class="process-config-view pt-1">
-          <batch-processing-label label="Filter Options"/>
-          <filter-builder/>
+          <batch-processing-label label="Filter Options" closeButton="true" @closed="$emit('closed')"/>
+          <filter-builder :key="filterKey"/>
         </v-container>
         <v-divider class="mt-3"></v-divider>
         <v-container id="adjustments-container" class="process-config-view">
           <batch-processing-label label="Metadata Adjustments"/>
-          <adjustment-builder ref="adjustmentsBuilderComponent"/>
+          <adjustment-builder :key="adjustmentKey" ref="adjustmentsBuilderComponent"/>
         </v-container>
       </div>
     </v-col>
@@ -22,11 +22,15 @@
     <v-btn color="img-name" block @click="process">Update Photos</v-btn>
   </v-card-actions>
 </v-card>
+<v-dialog v-model="showSummary" persistent>
+  <batch-processing-summary @close="confirmationClosed"/>
+</v-dialog>
 </template>
 
 <script setup>
 import { ref } from 'vue';
 import { useAlertStore } from '../../stores/alertStore'
+import BatchProcessingSummary from './BatchProcessingSummary.vue'
 import BatchProcessingLabel from './BatchProcessingLabel.vue';
 import FilteredList from './views/FilteredList.vue';
 import FilterBuilder from './views/FilterBuilder.vue';
@@ -37,6 +41,9 @@ const emit = defineEmits(['closed']);
 const alertStore = useAlertStore();
 const adjustmentsBuilderComponent = ref(null);
 const showTooltip = ref(false);
+const showSummary = ref(false);
+const filterKey = ref(Date.now());
+const adjustmentKey = ref(Date.now());
 
 setTimeout(() => showTooltip.value = true, 3000);
 
@@ -49,9 +56,16 @@ const process = () => {
     alertStore.alert.send("No adjustments to make, add some!");
   }
   else {
-    // Open confirmation screen
+    showSummary.value = true;
   }
-  //emit('closed');
+}
+
+const confirmationClosed = (refresh = false) => {
+  showSummary.value = false;
+  if (refresh) {
+    filterKey.value = Date.now();
+    adjustmentKey.value = Date.now();
+  }
 }
 </script>
 

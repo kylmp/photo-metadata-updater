@@ -15,6 +15,10 @@ export const useBatchProcessingStore = defineStore('batchProcessingStore', () =>
     nonDatetimeAdjustments.value = Object.values(newAdjustments).filter(meta => meta.component !== 'datetime');
   }
 
+  const getAdjustments = () => {
+    return adjustments.value;
+  }
+
   const getAdjustedFilteredList = () => {
     return filteredList.value.map(metadata => applyAdjustments({...metadata}));
   }
@@ -50,8 +54,8 @@ export const useBatchProcessingStore = defineStore('batchProcessingStore', () =>
     }
     if (timeAdjustment.type === 'adj') {
       datetime.setHours(datetime.getHours() + (timeAdjustment.adjustment.hour || 0));
-      datetime.setMinutes(datetime.getMinutes() + (timeAdjustment.adjustment.min || 0));
-      datetime.setSeconds(datetime.getSeconds() + (timeAdjustment.adjustment.sec || 0));
+      datetime.setMinutes(datetime.getMinutes() + (timeAdjustment.adjustment.minute || 0));
+      datetime.setSeconds(datetime.getSeconds() + (timeAdjustment.adjustment.second || 0));
     }
 
     metadata.date = `${padNumber(datetime.getFullYear(), 4)}-${padNumber(datetime.getMonth() + 1)}-${padNumber(datetime.getDate())}`;
@@ -63,5 +67,5 @@ export const useBatchProcessingStore = defineStore('batchProcessingStore', () =>
     return String(num).padStart(amount, '0');
   }
 
-  return { filteredList, setFilteredList, setAdjustments, getAdjustedFilteredList };
+  return { filteredList, setFilteredList, setAdjustments, getAdjustments, getAdjustedFilteredList };
 }); 

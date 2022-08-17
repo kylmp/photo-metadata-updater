@@ -48,8 +48,8 @@ module.exports = {
 
   setMetadata: async function(metadata) {
     if (metadata.timezone === 'calculate') {
-      metadata.timezone = datetimeUtils.decodeOffset(
-        bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
+      metadata.timezone = datetimeUtils.encodeOffset(
+        await bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
     }
 
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);

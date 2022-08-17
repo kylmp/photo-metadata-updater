@@ -102,13 +102,13 @@ router.get('/maps-api-key', async function (req, res) {
 
 // Calculate timezone offset from coordinates and datetime info
 router.get('/calculate-timezone', async function (req, res) {
-  const metadata = {date: req.query.date, time: req.query.time, latitude: req.query.lat, longitude: req.query.lon};
+  const metadata = {date: req.query.date, time: req.query.time, latitude: Number(req.query.lat), longitude: Number(req.query.lon)};
   const errorMsg = validateMetadata(metadata, ['timezone', 'elevation']);
   if (errorMsg !== '') {
     res.status(400).send(errorMsg);
   }
   else {
-    bingMapsApi.getTzOffsetFromCoordinates(req.query.lat, req.query.lon, req.query.date, req.query.time).then(offset => {
+    bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time).then(offset => {
       res.status(200).send(datetimeUtils.encodeOffset(offset));
     }).catch(err => {
       res.status(500).send(err.message);
@@ -123,7 +123,7 @@ function validateMetadata(metadata, ignore = []) {
   else if (!ignore.includes('time') && !datetimeUtils.isValidTime(metadata.time)) {
     return 'invalid time';
   }
-  else if (!ignore.includes('timezone') && !datetimeUtils.isValidOffset(metadata.timezone)) {
+  else if (!ignore.includes('timezone') && !datetimeUtils.isValidOffset(metadata.timezone) && metadata.timezone !== 'calculate') {
     return 'invalid timezone offset';
   }
   else if (!ignore.includes('coordinates') && !coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {

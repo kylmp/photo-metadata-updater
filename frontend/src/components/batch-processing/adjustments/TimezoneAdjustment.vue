@@ -16,7 +16,6 @@
       v-model="adjustmentValue"
       label="Timezone Offset"
       placeholder="+HH:MM"
-      suffix="+HH:MM"
       :rules="adjustmentOption.rules"
       append-icon="mdi-window-close"
       clear-icon="mdi-window-close"
