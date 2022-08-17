@@ -2,7 +2,7 @@
   "author": "klymp",
   "license": "ISC",
   "name": "photo-metadata-updater",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Update photo metadata easily",
   "private": true,
   "scripts": {
@@ -14,8 +14,15 @@
     "build": "releases/build.sh"
   },
   "pkg": {
-    "targets": ["node18-linux-x64", "node18-linux-arm64", "node18-macos-x64", "node18-macos-arm64"],
-    "assets": ["./public/**/*"],
+    "targets": [
+      "node18-linux-x64",
+      "node18-linux-arm64",
+      "node18-macos-x64",
+      "node18-macos-arm64"
+    ],
+    "assets": [
+      "./public/**/*"
+    ],
     "outputPath": "./releases/"
   }
 }
