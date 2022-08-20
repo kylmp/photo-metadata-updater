@@ -72,11 +72,7 @@ coordinatesStore.$subscribe((mutation, state) => {
   if (map) {
     const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
     let viewOptions = { center: center };
-    if (state.isNewPhoto) {
-      viewOptions.zoom = getZoom(center);
-    }
     map.setView(viewOptions);
-
     map.entities.clear();
     map.entities.push(new Microsoft.Maps.Pushpin(center));
   }

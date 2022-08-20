@@ -73,7 +73,7 @@ const toggleTooltip = () => {
 const options = ref(new Map([
   ['theme', {label: "Dark mode", click: toggleTheme, state: false}],
   ['save', {label: "Show warning before saving a photo", click: toggleSaveWarning, state: true}],
-  ['tooltip', {label: "Show calculate timezone tooltip", click: toggleTooltip, state: true}],
+  ['tooltip', {label: "Show clipboard/timezone search tooltips", click: toggleTooltip, state: true}],
 ]));
 
 // Set theme state from local storage

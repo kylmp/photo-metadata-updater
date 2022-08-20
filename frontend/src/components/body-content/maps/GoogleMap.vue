@@ -67,9 +67,6 @@ const getZoom = (center) => {
 coordinatesStore.$subscribe((mutation, state) => {
   if (map) {
     const center = new google.maps.LatLng(state.coordinates.lat, state.coordinates.lon);
-    if (state.isNewPhoto) {
-      map.setZoom(getZoom(center));
-    }
     map.panTo(center);
     pushpin.setPosition(center);
   }

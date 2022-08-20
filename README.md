@@ -47,7 +47,9 @@ Tip 1: Click the search icon next to timezone offset field to calculate timezone
 
 Tip 2: You can either click on the map itself to select new coordinates, or enter them manually in the text boxes
 
-Tip 3: You can disable warnings, or change to dark mode in the options menu (top left corner)
+Tip 3: You can paste coordinates in decimal degrees format "latitude, longitude" in either the latitude or longitude fields, and the app will automatically detect this and populate both coordinates values for you automatically
+
+Tip 4: You can disable warnings, or change to dark mode in the options menu (top left corner)
 
 # EXIF/Metadata information
 

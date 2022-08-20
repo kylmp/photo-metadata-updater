@@ -86,6 +86,7 @@ const generateDatetimeAdjustmentText = (adjustment) => {
 }
 
 const process = () => {
+  // Todo - process in batches of 10
   processing.value = true;
   title.value = 'Processing...';
   axios.post('/api/photo', batchProcessingStore.getAdjustedFilteredList()).then(res => {
@@ -95,7 +96,7 @@ const process = () => {
     result.value.icon = 'mdi-check-bold';
   }).catch(err => {
     title.value = 'Error';
-    result.value.text = (err.response.status === 400) ? `${err.response.data}` : 'Unexpected error processing photos'
+    result.value.text = (err.response && err.response.status === 400) ? `${err.response.data}` : 'Unexpected error processing photos'
     result.value.icon = 'mdi-close-thick';
   }).finally(() => {
     processing.value = false;

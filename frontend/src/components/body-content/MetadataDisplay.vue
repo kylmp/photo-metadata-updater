@@ -46,6 +46,8 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            @keypress="isValidDateChar($event)"
+            @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
         </v-col>
         <v-col sm="4">
@@ -57,17 +59,21 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            @keypress="isValidTimeChar($event)"
+            @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
         </v-col>
         <v-col sm="4">
           <v-text-field
             label="Timezone Offset (+/-HH:MM)"
-            placeholder="+0000"
+            placeholder="+HH:MM"
             v-model="offset"
             :rules="offsetRules"
             variant="outlined"
             density="compact"
             hide-details="true"
+            @keypress="isValidTimezoneChar($event)"
+            @keydown.enter.prevent="saveMetadata"
           >
           <template v-slot:append>
             <div class="tooltip" v-if="!gettingTimezone">
@@ -90,6 +96,8 @@
             density="compact"
             hide-details="true"
             suffix="m"
+            @keypress="isValidNumberChar($event)"
+            @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
         </v-col>
         <v-col sm="4">
@@ -101,7 +109,10 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            @paste="detectCoordinatesPasted"
             @input="coordinatesUpdate"
+            @keypress="isValidNumberChar($event)"
+            @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
         </v-col>
         <v-col sm="4">
@@ -113,8 +124,18 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            @paste="detectCoordinatesPasted"
             @input="coordinatesUpdate"
-          ></v-text-field>
+            @keypress="isValidNumberChar($event)"
+            @keydown.enter.prevent="saveMetadata"
+          >
+          <template v-slot:append>
+            <div class="tooltip">
+              <v-icon @click="copyCoordinatesToClipboard">mdi-clipboard-text</v-icon>
+              <span v-if="tooltipEnabled" class="tooltiptext">Copy coordinates to clipboard</span>
+            </div>
+          </template>
+          </v-text-field>
         </v-col>
       </v-row>
     </v-container>
@@ -249,6 +270,7 @@ const calculateTimezone = () => {
     const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
     axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
       offset.value = res.data;
+      alertStore.alert.success({message: "Timezone calculated as "+res.data, timeout: 3000})
     }).catch((err) => {
       alertStore.alert.error(err.response.data);
     }).finally(() => {
@@ -264,6 +286,43 @@ const isValidDate = (input) => {
   const parts = input.split('-').map(part => parseInt(part, 10));
   const date = new Date(parts[0], parts[1] - 1, parts[2]);
   return date.getFullYear() === parts[0] && date.getMonth() === (parts[1] - 1) && date.getDate() === parts[2];
+}
+
+const detectCoordinatesPasted = (evt) => {
+  const coordinates = evt.clipboardData.getData('text/plain').split(',').map(c => c.trim());
+  if (coordinates.length === 2 && coordinates.every(c => settingsStore.getRegex('number').test(c))) {
+    latitude.value = coordinates[0];
+    longitude.value = coordinates[1];
+    coordinatesUpdate();
+    evt.preventDefault();
+  }
+}
+
+const copyCoordinatesToClipboard = () => {
+  const coordinates = `${latitude.value}, ${longitude.value}`;
+  navigator.clipboard.writeText(coordinates).then(() => {
+      alertStore.alert.success({message: "Coordinates copied to clipboard!", timeout: 3000})
+  });
+}
+
+const isValidNumberChar = (e) => {
+  if (/^[-\.0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  e.preventDefault();
+}
+
+const isValidDateChar = (e) => {
+  if (/^[-0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  e.preventDefault();
+}
+
+const isValidTimeChar = (e) => {
+  if (/^[\:0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  e.preventDefault();
+}
+
+const isValidTimezoneChar = (e) => {
+  if (/^[+-\:0-9]+$/.test(String.fromCharCode(e.keyCode))) return true;
+  e.preventDefault();
 }
 
 setFields();
