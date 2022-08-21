@@ -6,6 +6,7 @@ const coordinatesUtils = require('../utils/coordinates-utils');
 const bingMapsApi = require('../service/bing-maps-api-service');
 const imgFolder = require('./image-folder');
 const regex = require('../constants/regex');
+const sse = require('../utils/sse-helper');
 
 var currentDir = '';
 
@@ -116,21 +117,56 @@ router.get('/calculate-timezone', async function (req, res) {
   }
 });
 
+/**
+ * Batch Update - Server Side Event Request
+ * Body: Array of metadata to update photos with
+ * Message event is sent after every photo update and connection is closed when all photos are updated
+ */
+router.post('/batchupdate', async function(req, res) {
+  sse.init(res);
+
+  if (!(req.body instanceof Array)) {
+    sse.close(res, {'error': 'metadata array expected'}, 'error');
+    return;
+  }
+
+  for (let metadata of req.body) {
+    let data;
+    var status = 'success';
+    metadata.file = `${currentDir}/${metadata.name}`;
+    
+    const errorMsg = validateMetadata(metadata);
+    if (errorMsg === '') {
+      data = await exifSvc.setMetadata(metadata).catch(() => {
+        status = 'error';
+      }) || {'name': metadata.name, 'error': 'Exiftool Error'};
+    }
+    else {
+      status = 'error'
+      data = {'name': metadata.name, 'error': errorMsg};
+    }
+
+    sse.send(res, data, status);
+  }
+
+  sse.close(res);
+});
+
 function validateMetadata(metadata, ignore = []) {
   if (!ignore.includes('date') && !datetimeUtils.isValidDate(metadata.date)) {
-    return 'invalid date';
+    return 'Invalid Date';
   }
   else if (!ignore.includes('time') && !datetimeUtils.isValidTime(metadata.time)) {
-    return 'invalid time';
+    return 'Invalid Time';
   }
   else if (!ignore.includes('timezone') && !datetimeUtils.isValidOffset(metadata.timezone) && metadata.timezone !== 'calculate') {
-    return 'invalid timezone offset';
+    return 'Invalid Timezone Offset';
   }
   else if (!ignore.includes('coordinates') && !coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {
-    return 'invalid coordinates';
+    return 'Invalid Coordinates';
   }
   else if (!ignore.includes('elevation') && !coordinatesUtils.isValidElevation(metadata.elevation)) {
-    return 'invalid elevation';
+    return 'Invalid Elevation';
   }
   return '';
 }

@@ -59,6 +59,7 @@ module.exports = {
     let command = `"${exiftool}" "${metadata.file}" ${options} ${coordinates} ${elevation} ${datetime}`;
     
     if (shell.exec(command).code !== 0) {
+      console.log(`Error setting metadata photo=${metadata.name}`);
       throw new Error('exiftool error');
     }
     return await module.exports.getMetadata(metadata.file).catch(err => console.log(err));
