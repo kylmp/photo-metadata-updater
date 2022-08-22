@@ -241,7 +241,7 @@ const saveMetadata = () => {
   validateBeforeContinue(() => {
     dialog.value = false;
     saving.value = true;
-    const updatedData = [{
+    const updatedData = {
       "name": props.metadata.name,
       "date": createDate.value,
       "time": createTime.value,
@@ -249,10 +249,10 @@ const saveMetadata = () => {
       "latitude": latitude.value,
       "longitude": longitude.value,
       "timezone": offset.value,
-    }];
-    axios.post('/api/photo', updatedData).then((newMetadata) => {
+    };
+    axios.post('/api/metadata', updatedData).then((newMetadata) => {
       saveComplete.value = true;
-      photoListStore.updateItem(newMetadata.data[0]);
+      photoListStore.updateItem(newMetadata.data);
       setTimeout(() => { saveComplete.value = false; }, 3000);
       alertStore.alert.success({message: "Photo updated", timeout: 3000})
     }).catch(err => {

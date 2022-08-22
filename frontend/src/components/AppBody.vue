@@ -54,7 +54,7 @@ settingsStore.$subscribe((mutation, state) => {
 
 // Fetch photo metadata when selected image changes
 selectedPhotoStore.$subscribe((mutation, state) => {
-  axios.get('/api/photo?name='+encodeURI(state.photo.name)).then(res => {
+  axios.get('/api/metadata?name='+encodeURI(state.photo.name)).then(res => {
     metadata.value = res.data;
     noImage.value = false;
     coordinatesStore.update(res.data.latitude, res.data.longitude, true);
