@@ -196,7 +196,7 @@ const getErrorSubtext = () => {
 }
 
 const closeWindow = () => {
-  emit('close', title.value !== 'Error');
+  emit('close', (title.value !== 'Error' && title.value !== 'Batch Update Summary'));
 }
 
 populateSummaryText();
