@@ -1,27 +1,24 @@
 # Photo Metadata Updater and Geotagger
 
-* Allows you to view and update photo metadata, timezone, and geotag/coordinates/location.
-* Specifically built to geotag and time date images correctly to work with Google Photos.
-* Includes support for viewing equirectangular/360 photos.
-* Dark mode option.
+* View and update photo metadata, timezone, and geotag/coordinates/location
+* Able to batch update photos in bulk based on extensive array of filters
+* Built to geotag and time date images correctly to work with Google Photos
+* Supports viewing equirectangular/360 photos
+* Dark mode option
 
-*This app is only made to be run locally.*
+*This app is only meant to be run locally on your own computer*
 
-Node.js application with a Vue frontend. Runs on Mac/Unix systems, not tested on Windows. 
+Node.js backend, Vue.js frontend. Runs on Mac/Unix systems, not tested on Windows. 
 
 ### Please make backups of all photos before using the app and editing metadata, in case of unexpected errors.
 
 ### [Live Demo](http://pmu-demo.kylmp.com/) (Note: Metadata is reset every 3 hours)
 
-# Recommended Dependency
-
-In order to take advantage of timezone and map features, you need a [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key). 
-
 # Run App Guide
 
 1. Download the [latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest) based on your system
 2. Extract the zip to a new directory
-3. (Recommended, not required) Add your [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) to the `config.properties` file
+3. (Highly recommended, not required) Add your [Bing maps API key](https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key) to the `config.properties` file
 4. Run the `photo-metadata-updater` file, you will see a console window open
 5. In a browser, navigate to http://localhost:8000
 
@@ -78,6 +75,7 @@ This application writes to the following EXIF metadata fields:
 * [Vuetify](https://vuetifyjs.com/en/) - Vue UI library based on Google's material design
 * [Vite](https://vitejs.dev/) - Frontend tooling
 * [Pannellum](https://pannellum.org/) - Equirectangular image projection viewer
+* [SSE](https://github.com/mpetazzoni/sse.js) - Eventsource SSE alternative
 * [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/v8-web-control/creating-and-hosting-map-controls/) - Map view and timezones API
 * [Axios](https://axios-http.com/docs/intro) - HTTP Client
 * [Express.js](https://expressjs.com/) - Web framework for Node apps
