@@ -1,23 +1,17 @@
 const asyncShell = require('../utils/async-shell');
-const exif = require('../service/exiftool-service');
 const utils = require('../utils/general-utils');
 
-const fileTypes = ['.jpg', '.jpeg', '.png'];
+const fileTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg', '.png'];
 
 module.exports = {
-  getPhotoList: async function(directory, recursive = false) {
+  getPhotoList: async function(directory) {
     let photos = [];
-    let depth = recursive ? '' : ' -maxdepth 1';
     for (const type of fileTypes) {
-      let data = await asyncShell.exec(`find "${directory}"${depth} -name '*${type}'`).catch(err => {throw err});
+      let data = await asyncShell.exec(`find "${directory}" -name '*${type}'`).catch(err => {throw err});
       for (const file of data.split(/\r?\n/).slice(0, -1)) {
         photos.push({'name': utils.getPhotoNameFromFile(file)});
       }
     }
     return photos;
-  },
-
-  getPhotoMetadata: async function(photoFile) {
-    return await exif.getMetadata(photoFile).catch(err => {throw err});
-  },
+  }
 }

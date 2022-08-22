@@ -1,5 +1,3 @@
-const regex = require('../constants/regex');
-
 module.exports = {
   // Format from exiftool : 0 deg 0' 0.00" N, 0 deg 0' 0.00" E
   // Converted to array : [deg, min, sec, N/S, deg, min, sec, E/W]
@@ -16,13 +14,5 @@ module.exports = {
     longitude = parseInt(gpsArr[4]) + parseFloat(gpsArr[5]/60) + parseFloat(gpsArr[6]/3600);
     coordinates.longitude = (gpsArr[7] === 'W') ? longitude * -1 : longitude;
     return coordinates;
-  },
-
-  isValidCoordinates: function (lat, lon) {
-    return regex.get('number').test(lat) && regex.get('number').test(lon) && lat <= 90 && lat >= -90 && lon <= 180 && lon >= -180;
-  },
-
-  isValidElevation: function (elevation) {
-    return regex.get('number').test(elevation);
   }
 }

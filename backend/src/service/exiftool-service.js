@@ -18,18 +18,17 @@ if (exiftool === 'bundled') {
 
 module.exports = {
   getMetadata: async function(file) {
-    let exifDataMap = new Map();
-    const data = await asyncShell.exec(`"${exiftool}" "${file}"`).catch(err => {throw err});
-    data.split(/\r?\n/).forEach((line) => {
-      let exifLine = line.split(': ');
-      exifDataMap.set(exifLine[0].trim(), exifLine[1]);
-    });
+    const rawExifData = await asyncShell.exec(`"${exiftool}" "${file}"`).catch(err => {throw err});
+    const exifDataMap = new Map(rawExifData.split(/\r?\n/).map(metadataLine => {
+      const metadataParts = metadataLine.split(': ').map(metadataPart => metadataPart.trim());
+      return [metadataParts[0], metadataParts[1]];
+    }));
 
     const locdatetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || exifDataMap.get('Modify Date') || defaultDate;
     const {date, time, datetime} = datetimeUtils.parseDatetime(locdatetime);
     const {latitude, longitude} = coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position'));
 
-    let res = { 
+    return { 
       'name': exifDataMap.get('File Name') || unknown, 
       'size': exifDataMap.get('File Size') || unknown,
       'date': date,
@@ -43,7 +42,6 @@ module.exports = {
       'type': exifDataMap.get('File Type Extension') || unknown,
       'isGeotagged': latitude !== 0 && longitude !== 0
     };
-    return res;
   },
 
   setMetadata: async function(metadata) {

@@ -1,9 +1,9 @@
 var router = require('express').Router();
 const directoryService = require('../service/photo-directory-service');
 const exifSvc = require('../service/exiftool-service');
-const datetimeUtils = require('../utils/datetime-utils');
-const coordinatesUtils = require('../utils/coordinates-utils');
 const bingMapsApi = require('../service/bing-maps-api-service');
+const datetimeUtils = require('../utils/datetime-utils');
+const validation = require('../utils/validation-utils');
 const imgFolder = require('./image-folder');
 const regex = require('../constants/regex');
 const sse = require('../utils/sse-helper');
@@ -55,7 +55,7 @@ router.get('/metadata', function (req, res) {
     return;
   }
 
-  directoryService.getPhotoMetadata(`${currentDir}/${photoName}`).then(photoMetadata => {
+  exifSvc.getMetadata(`${currentDir}/${photoName}`).then(photoMetadata => {
     res.status(200).send(photoMetadata);
   }).catch(err => { 
     if ((typeof err === 'string' || err instanceof String) && err.includes("File not found")) {
@@ -69,22 +69,21 @@ router.get('/metadata', function (req, res) {
 /**
  * Update metadata for a photo
  */
-router.post('/metadata', async function (req, res) {
+router.post('/metadata', function (req, res) {
   let metadata = req.body;
   metadata.file = `${currentDir}/${metadata.name}`;
 
-  const errorMsg = validateMetadata(metadata);
+  const errorMsg = validation.validateMetadata(metadata);
   if (errorMsg !== '') {
     res.status(400).send(errorMsg);
     return;
   }
   
-  const updatedMetadata = await exifSvc.setMetadata(metadata).catch((err) => {
+  exifSvc.setMetadata(metadata).then((updatedMetadata) => {
+    res.status(200).send(updatedMetadata);
+  }).catch((err) => {
     res.status(500).send(err.message);
-    return;
   });
-
-  res.status(200).send(updatedMetadata);
 });
 
 /**
@@ -100,10 +99,10 @@ router.post('/metadata', async function (req, res) {
 
   for (let metadata of req.body) {
     let data;
-    var status = 'success';
+    let status = 'success';
     metadata.file = `${currentDir}/${metadata.name}`;
     
-    const errorMsg = validateMetadata(metadata);
+    const errorMsg = validation.validateMetadata(metadata);
     if (errorMsg === '') {
       data = await exifSvc.setMetadata(metadata).catch(() => {
         status = 'error';
@@ -125,7 +124,7 @@ router.post('/metadata', async function (req, res) {
  */
 router.get('/calculate-timezone', function (req, res) {
   const metadata = {date: req.query.date, time: req.query.time, latitude: Number(req.query.lat), longitude: Number(req.query.lon)};
-  const errorMsg = validateMetadata(metadata, ['timezone', 'elevation']);
+  const errorMsg = validation.validateMetadata(metadata, ['timezone', 'elevation']);
   if (errorMsg !== '') {
     res.status(400).send(errorMsg);
   }
@@ -170,24 +169,5 @@ router.get('/settings', function(req, res) {
     res.status(400).send('No maps API key for '+apiProvider+' in .env file!');
   }
 });
-
-function validateMetadata(metadata, ignore = []) {
-  if (!ignore.includes('date') && !datetimeUtils.isValidDate(metadata.date)) {
-    return 'Invalid Date';
-  }
-  else if (!ignore.includes('time') && !datetimeUtils.isValidTime(metadata.time)) {
-    return 'Invalid Time';
-  }
-  else if (!ignore.includes('timezone') && !datetimeUtils.isValidOffset(metadata.timezone) && metadata.timezone !== 'calculate') {
-    return 'Invalid Timezone Offset';
-  }
-  else if (!ignore.includes('coordinates') && !coordinatesUtils.isValidCoordinates(metadata.latitude, metadata.longitude)) {
-    return 'Invalid Coordinates';
-  }
-  else if (!ignore.includes('elevation') && !coordinatesUtils.isValidElevation(metadata.elevation)) {
-    return 'Invalid Elevation';
-  }
-  return '';
-}
 
 module.exports = router;

@@ -1,5 +1,3 @@
-const regex = require('../constants/regex');
-
 module.exports = {
   parseDatetime: function(datetime) {
     let res = { "date": "1970-01-01", "time": "00:00:00", "datetime": "1970-01-01 00:00:00" };
@@ -60,23 +58,6 @@ module.exports = {
     const diffMins = pad(Math.abs(diff % 60));
     return `${diff <= 0 ? '-' : '+'}${diffHour}:${diffMins}`
   },
-
-  isValidOffset: function(offset) {
-    return regex.get('timezone').test(offset);
-  },
-
-  isValidDate: function(input) {
-    if (!regex.get('date').test(input)) {
-      return false;
-    }
-    const parts = input.split('-').map(part => parseInt(part, 10));
-    const date = new Date(parts[0], parts[1] - 1, parts[2]);
-    return date.getFullYear() === parts[0] && date.getMonth() === (parts[1] - 1) && date.getDate() === parts[2];
-  },
-
-  isValidTime: function(time) {
-    return regex.get('time').test(time);
-  }
 }
 
 function pad(num, amount = 2) {
