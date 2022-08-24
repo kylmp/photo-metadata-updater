@@ -65,15 +65,15 @@ const getZoom = (center) => {
 // Listen to coordinates updates, and move map to new position and add a pushpin there
 // If coordinates change is due to a new photo being selected, then reset the zoom level to default
 coordinatesStore.$subscribe((mutation, state) => {
-  if (map) {
-    const center = new google.maps.LatLng(state.coordinates.lat, state.coordinates.lon);
-    map.panTo(center);
-    pushpin.setPosition(center);
-  }
+  if (!map) return;
+  const center = new google.maps.LatLng(state.coordinates.lat, state.coordinates.lon);
+  map.panTo(center);
+  pushpin.setPosition(center);
 });
 
 // Listen to options changes to detect changes in theme
 optionsStore.$subscribe((mutation, state)  => { 
+  if (!map) return;
   map.setMapTypeId(state.darkTheme ? darkThemeOption : lightThemeOption);
 });
 </script>

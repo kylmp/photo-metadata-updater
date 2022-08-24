@@ -71,13 +71,13 @@ const toggleTooltip = () => {
 
 // Map for building options menu, <key, { display text, click function, default state }>
 const options = ref(new Map([
-  ['theme', {label: "Dark mode", click: toggleTheme, state: false}],
+  ['theme', {label: "Dark mode", click: toggleTheme, state: true}],
   ['save', {label: "Show warning before saving a photo", click: toggleSaveWarning, state: true}],
   ['tooltip', {label: "Show clipboard/timezone search tooltips", click: toggleTooltip, state: true}],
 ]));
 
 // Set theme state from local storage
-const themeOption = localStorage.getItem("photo-metadata-theme") === "dark";
+const themeOption = localStorage.getItem("photo-metadata-theme") === "light" ? false : true;
 options.value.set('theme', {...options.value.get('theme'), state: themeOption})
 theme.global.name.value = themeOption ? 'darkTheme' : 'lightTheme';
 optionsStore.setDarkTheme(themeOption);

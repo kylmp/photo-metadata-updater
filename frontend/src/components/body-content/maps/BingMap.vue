@@ -69,19 +69,21 @@ const getZoom = (center) => {
 // Listen to coordinates updates, and move map to new position and add a pushpin there
 // If coordinates change is due to a new photo being selected, then reset the zoom level to default
 coordinatesStore.$subscribe((mutation, state) => {
-  if (map) {
-    const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
-    let viewOptions = { center: center };
-    map.setView(viewOptions);
-    map.entities.clear();
-    map.entities.push(new Microsoft.Maps.Pushpin(center));
-  }
+  if (!map) return;
+
+  const center = new Microsoft.Maps.Location(state.coordinates.lat, state.coordinates.lon);
+  let viewOptions = { center: center };
+  map.setView(viewOptions);
+  map.entities.clear();
+  map.entities.push(new Microsoft.Maps.Pushpin(center));
 });
 
 // Listen to options changes to detect changes in theme
 // Completely dispose/recreate the map if the map type id needs to change
 // Note: Bing maps has bugs with map.value.setMapType(), which is why I have to do this
 optionsStore.$subscribe((mutation, state)  => { 
+  if (!map) return;
+
   let newType = state.darkTheme ? Microsoft.Maps.MapTypeId.aerial : Microsoft.Maps.MapTypeId.road;
   let opts = map.getOptions();
 
