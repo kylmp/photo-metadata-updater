@@ -119,4 +119,3 @@ if [ "$#" -ne 1 ]; then
 else
   use_version_argument $1
 fi
-

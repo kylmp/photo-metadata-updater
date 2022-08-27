@@ -11,7 +11,6 @@ const shell = require('shelljs');
 const bodyParser = require('body-parser');
 const exiftoolSvc = require('./src/service/exiftool-service');
 
-var server;
 console.log(`\nStarting ${process.env.APP_NAME}...`);
 
 if (!exiftoolSvc.isAvailable()) {
@@ -44,8 +43,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Add API routes
-const controllers = require('fs').readdirSync(path.join(__dirname, 'src/controller'))
-controllers.forEach(controller => {
+require('fs').readdirSync(path.join(__dirname, 'src/controller')).forEach(controller => {
   app.use(`/api/${controller.split('-')[0]}`, require(`./src/controller/${controller}`))
 });
 
@@ -54,18 +52,15 @@ app.use('/img', require('./src/middleware/image-validator'));
 app.use('/img', require('./src/middleware/image-folder'));
 
 // Start server
-server = app.listen(process.env.APP_PORT, () => {
+const server = app.listen(process.env.APP_PORT, () => {
   console.log(`\x1b[32m${process.env.APP_NAME} is now running and available here: http://localhost:${process.env.APP_PORT}\x1b[0m`);
 });
 
 // Handle process shutdown/interruption
 const gracefulShutdown = () => {
-  if (typeof server !== 'undefined') {
-    console.log(`\nShutting down ${process.env.APP_NAME} server...`);
-    server.close(function () {
-      console.log(`${process.env.APP_NAME} server shutdown.`);
-    });
-  }
+  if (typeof server === 'undefined') return;
+  console.log(`\nShutting down ${process.env.APP_NAME} server...`);
+  server.close(() => console.log(`${process.env.APP_NAME} server shutdown.`));
 };
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
