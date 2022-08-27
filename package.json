@@ -21,7 +21,8 @@
       "node18-macos-arm64"
     ],
     "assets": [
-      "./public/**/*"
+      "./public/**/*",
+      "./backend/src/**/*"
     ],
     "outputPath": "./releases/"
   }

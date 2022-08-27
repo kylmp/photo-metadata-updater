@@ -8,20 +8,21 @@ process.env.APP_NAME = process.env.APP_NAME || 'Photo Metadata Updater';
 const express = require('express');
 const app = express();
 const shell = require('shelljs');
+const chalk = require('chalk');
 const bodyParser = require('body-parser');
 const exiftoolSvc = require('./src/service/exiftool-service');
 
 console.log(`\nStarting ${process.env.APP_NAME}...`);
 
 if (!exiftoolSvc.isAvailable()) {
-  console.log('\n\x1b[31mError\x1b[0m - You must have exiftool installed to run this app (https://exiftool.org/install.html)');
+  console.log(`\n${chalk.red('Error')} - You must have exiftool installed to run this app (https://exiftool.org/install.html)`);
   console.log('... or update the EXIFTOOL_PATH variable in the config.properties file if already installed\n');
   shell.exit(1);
 }
 
 const bingApiKey = process.env.BING_API_KEY || 'YOUR_BING_API_KEY';
 if (bingApiKey === 'YOUR_BING_API_KEY') {
-  console.log('\n\x1b[33mWARNING\x1b[0m - map and timezone features will not work without a bing maps API key');
+  console.log(`\n${chalk.yellow('Warning')}  - map and timezone features will not work without a bing maps API key`);
   console.log('Get one here: https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key');
   console.log('Then, add your API key to the config.properties file and restart the application\n')
 }
@@ -53,7 +54,7 @@ app.use('/img', require('./src/middleware/image-folder'));
 
 // Start server
 const server = app.listen(process.env.APP_PORT, () => {
-  console.log(`\x1b[32m${process.env.APP_NAME} is now running and available here: http://localhost:${process.env.APP_PORT}\x1b[0m`);
+  console.log(chalk.green(`${process.env.APP_NAME} is now running and available here: http://localhost:${process.env.APP_PORT}`));
 });
 
 // Handle process shutdown/interruption

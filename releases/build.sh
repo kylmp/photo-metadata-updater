@@ -51,7 +51,7 @@ function build_release() {
   echo -e "\nFrontend built\n"
 
   echo -e "Creating executables\n"
-  pkg $scriptdir/../backend/photo-metadata-updater.js --config $scriptdir/../package.json
+  pkg $scriptdir/../backend/photo-metadata-updater.js --config $scriptdir/../package.json --compress GZip
 
   echo -e "Creating version folder\n"
   [ -d "$scriptdir/$1" ] && rm -rf $scriptdir/$1
