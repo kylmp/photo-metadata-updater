@@ -1,19 +1,18 @@
-var express = require('express');
-
-var imgFolder = createImgFolder();
+const express = require('express');
+const imgFolder = createImgFolder();
 
 function createImgFolder() {
   var static = express.static((process.pkg) ? process.cwd() : __dirname);
 
-  const imgFolder = function (req, res, next) {
+  const folder = function (req, res, next) {
     return static(req, res, next);
   }
 
-  imgFolder.setPath = function (newPath) {
+  folder.setPath = function (newPath) {
     static = express.static(newPath);
   }
 
-  return imgFolder;
+  return folder;
 }
 
 module.exports = imgFolder;

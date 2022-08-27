@@ -3,7 +3,8 @@ const path = require('path');
 const asyncShell = require('../utils/async-shell');
 const coordinatesUtils = require('../utils/coordinates-utils');
 const datetimeUtils = require('../utils/datetime-utils');
-const bingMapsApi = require('./bing-maps-api-service');
+const bingMapsApi = require('./map-service');
+const directoryService = require('./directory-service');
 
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
@@ -17,7 +18,8 @@ if (exiftool === 'bundled') {
 }
 
 module.exports = {
-  getMetadata: async function(file) {
+  getMetadata: async function(name) {
+    const file = `${directoryService.getDirectory()}/${name}`;
     const rawExifData = await asyncShell.exec(`"${exiftool}" "${file}"`).catch(err => {throw err});
     const exifDataMap = new Map(rawExifData.split(/\r?\n/).map(metadataLine => {
       const metadataParts = metadataLine.split(': ').map(metadataPart => metadataPart.trim());
@@ -50,17 +52,18 @@ module.exports = {
         await bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
     }
 
+    const file = `${directoryService.getDirectory()}/${metadata.name}`;
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);
     const elevation = buildElevationExifFields(metadata.elevation);
     const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
 
-    let command = `"${exiftool}" "${metadata.file}" ${options} ${coordinates} ${elevation} ${datetime}`;
-    
+    const command = `"${exiftool}" "${file}" ${options} ${coordinates} ${elevation} ${datetime}`;
+
     if (shell.exec(command).code !== 0) {
       console.log(`Error setting metadata photo=${metadata.name}`);
       throw new Error('exiftool error');
     }
-    return await module.exports.getMetadata(metadata.file).catch(err => console.log(err));
+    return await module.exports.getMetadata(metadata.name).catch(err => console.log(err));
   },
 
   isAvailable: function() {

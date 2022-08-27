@@ -250,7 +250,7 @@ const saveMetadata = () => {
       "longitude": longitude.value,
       "timezone": offset.value,
     };
-    axios.post('/api/metadata', updatedData).then((newMetadata) => {
+    axios.put('/api/metadata', updatedData).then((newMetadata) => {
       saveComplete.value = true;
       photoListStore.updateItem(newMetadata.data);
       setTimeout(() => { saveComplete.value = false; }, 3000);
@@ -268,7 +268,7 @@ const calculateTimezone = () => {
     gettingTimezone.value = true;
     const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
     const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
-    axios.get(`/api/calculate-timezone?${coordinates}&${datetime}`).then(res => {
+    axios.get(`/api/map/timezone?${coordinates}&${datetime}`).then(res => {
       offset.value = res.data;
       alertStore.alert.success({message: "Timezone calculated as "+res.data, timeout: 3000})
     }).catch((err) => {

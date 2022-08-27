@@ -82,10 +82,7 @@ const updateList = (directoryPath) => {
 
 // SSE request to stream in metadata for each photo in the list
 const loadMetadata = () => {
-  const loadMetadataRequest = new SSE(`${base}/api/directory`, {
-    headers: {'Content-Type': 'application/json'}, 
-    payload: JSON.stringify(Array.from(photoList.value.values()))
-  });
+  const loadMetadataRequest = new SSE(`${base}/api/directory?metadata=true`);
 
   loadMetadataRequest.onmessage = (msg) => {
     const { type, status, data } = JSON.parse(msg.data);

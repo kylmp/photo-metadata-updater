@@ -13,7 +13,7 @@ const axios = inject('axios');
 const provider = ref('');
 const apikey = ref('');
 
-axios.get('/api/maps-api-key').then((response) => {
+axios.get('/api/map/info').then((response) => {
   provider.value = response.data.provider;
   apikey.value = response.data.key;
 }).catch(() => {

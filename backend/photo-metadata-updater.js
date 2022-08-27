@@ -9,13 +9,12 @@ const express = require('express');
 const app = express();
 const shell = require('shelljs');
 const bodyParser = require('body-parser');
-const exifToolService = require('./src/service/exiftool-service');
+const exiftoolSvc = require('./src/service/exiftool-service');
 
 var server;
-
 console.log(`\nStarting ${process.env.APP_NAME}...`);
 
-if (!exifToolService.isAvailable()) {
+if (!exiftoolSvc.isAvailable()) {
   console.log('\n\x1b[31mError\x1b[0m - You must have exiftool installed to run this app (https://exiftool.org/install.html)');
   console.log('... or update the EXIFTOOL_PATH variable in the config.properties file if already installed\n');
   shell.exit(1);
@@ -28,6 +27,7 @@ if (bingApiKey === 'YOUR_BING_API_KEY') {
   console.log('Then, add your API key to the config.properties file and restart the application\n')
 }
 
+// Enable CORS origin if specified in config
 if (process.env.CORS_ORIGIN) {
   const cors = require('cors')
   const corsOptions = {
@@ -36,17 +36,29 @@ if (process.env.CORS_ORIGIN) {
   app.use(cors(corsOptions));
 }
 
+// Supported request body parsers
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// Host static frontend files
 app.use(express.static(path.join(__dirname, '../public')));
-app.use('/api', require('./src/middleware/api-routes'));
+
+// Add API routes
+const controllers = require('fs').readdirSync(path.join(__dirname, 'src/controller'))
+controllers.forEach(controller => {
+  app.use(`/api/${controller.split('-')[0]}`, require(`./src/controller/${controller}`))
+});
+
+// Add IMG route validation, dynamically changing static folder
 app.use('/img', require('./src/middleware/image-validator'));
 app.use('/img', require('./src/middleware/image-folder'));
 
+// Start server
 server = app.listen(process.env.APP_PORT, () => {
   console.log(`\x1b[32m${process.env.APP_NAME} is now running and available here: http://localhost:${process.env.APP_PORT}\x1b[0m`);
 });
 
+// Handle process shutdown/interruption
 const gracefulShutdown = () => {
   if (typeof server !== 'undefined') {
     console.log(`\nShutting down ${process.env.APP_NAME} server...`);
@@ -55,6 +67,5 @@ const gracefulShutdown = () => {
     });
   }
 };
-
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);

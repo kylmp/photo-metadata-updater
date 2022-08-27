@@ -106,7 +106,7 @@ const process = () => {
     errors: []
   };
 
-  batchUpdateRequest = new SSE(`${base}/api/batchupdate`, {
+  batchUpdateRequest = new SSE(`${base}/api/metadata`, {
     headers: {'Content-Type': 'application/json'}, 
     payload: JSON.stringify(batchProcessingStore.getAdjustedFilteredList())
   });
