@@ -4,7 +4,7 @@ const datetimeUtils = require('../utils/datetime-utils');
 const bingMapsApi = require('./map-service');
 const directory = require('./directory-service');
 
-const supportedImageTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg', '.png'];
+const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").split(' ');
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
 const setOptions = '-q -q';
@@ -27,7 +27,7 @@ module.exports = {
 
   getAllMetadata: function() {
     const getAllMetadataForImageType = supportedImageTypes.map(imgType => {
-      return shell.async(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*${imgType}`).catch(err => {
+      return shell.async(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*.${imgType}`).catch(err => {
         if (!(typeof err === 'string' && err.includes('File not found'))) throw err;
       });
     });

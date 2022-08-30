@@ -1,9 +1,10 @@
 var router = require('express').Router();
 
-const allowedTypesRegex = /^.*\.(jpg|JPG|jpeg|JPEG|png|PNG)$/;
+const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").split(' ');
 
 router.get('/*', function (req, res, next) {
-  (allowedTypesRegex.test(req.url)) ? next() : res.status(400).send('Invalid photo extenstion type');
+  const url = req.url.toLowerCase();
+  supportedImageTypes.some(imageType => url.endsWith(imageType)) ? next() : res.status(400).send('Invalid photo extenstion type');
 });
 
 module.exports = router;
