@@ -5,7 +5,7 @@
 const router = require('express').Router();
 const validation = require('../utils/validation-utils');
 const exif = require('../service/exiftool-service');
-const sse = require('../utils/sse-helper');
+const sse = require('../utils/sse-utils');
 
 /**
  * Get metadata for a photo
@@ -13,21 +13,17 @@ const sse = require('../utils/sse-helper');
  * Query Params [name]
  *   name: String = Name of photo to fetch metadata for
  */
-router.get('/', function (req, res) {
+router.get('/', async function (req, res) {
   const photoName = req.query.name || '';
   if (photoName === '') {
     res.status(400).send({error: 'name required'});
     return;
   }
 
-  exif.getMetadata(photoName).then(photoMetadata => {
-    res.status(200).send(photoMetadata);
-  }).catch(err => { 
-    if ((typeof err === 'string' || err instanceof String) && err.includes("File not found")) {
-      res.status(400).send();
-    } else {
-      res.status(500).send({error: err});
-    }
+  exif.getMetadata(photoName).then(metadata => {
+    res.status(200).send(metadata);
+  }).catch(err => {
+    (typeof err === 'string' && err.includes("File not found")) ? res.status(400).send() : res.status(500).send();
   });
 });
 
@@ -38,7 +34,7 @@ router.get('/', function (req, res) {
  *   Format: application/json
  *   Data: metadata object with 7 fields <name, date, time, timezone, elevation, latitude, longitude>
  */
-router.put('/', function (req, res) {
+router.put('/', async function (req, res) {
   const errorMsg = validation.validateMetadata(req.body);
   if (errorMsg !== '') {
     res.status(400).send(errorMsg);
@@ -59,7 +55,9 @@ router.put('/', function (req, res) {
  *   Format: application/json
  *   Data: Array of metadata objects with 7 fields <name, date, time, timezone, elevation, latitude, longitude>
  */
+let cancelled;
 router.post('/', async function(req, res) {
+  cancelled = false;
   sse.init(res);
 
   if (!(req.body instanceof Array)) {
@@ -68,12 +66,14 @@ router.post('/', async function(req, res) {
   }
 
   for (let metadata of req.body) {
+    if (cancelled) break;
+
     let data;
     let status = 'success';
     
     const errorMsg = validation.validateMetadata(metadata);
     if (errorMsg === '') {
-      data = await exif.setMetadata(metadata).catch(() => {
+      data = await exif.setMetadata(metadata, true).catch(() => {
         status = 'error';
       }) || {'name': metadata.name, 'error': 'Exiftool Error'};
     }
@@ -84,8 +84,29 @@ router.post('/', async function(req, res) {
 
     sse.send(res, data, status);
   }
-
   sse.close(res);
+});
+
+/**
+ * Cancel the batch update in progress (if any)
+ */
+router.get('/cancel-batch-update', async function (req, res) {
+  cancelled = true;
+  res.status(200).send();
+});
+
+/**
+ * Restore all backed up image files (used after batchupdate revert)
+ */
+router.get('/backup', async function (req, res) {
+  exif.restoreBackups() ? res.status(200).send() : res.status(500).send();
+});
+
+/**
+ * Delete all backed up image files (used after batchupdate confirmation)
+ */
+ router.delete('/backup', async function (req, res) {
+  exif.deleteBackups() ? res.status(200).send() : res.status(500).send();
 });
 
 module.exports = router;

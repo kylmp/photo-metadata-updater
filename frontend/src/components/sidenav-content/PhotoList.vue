@@ -30,7 +30,6 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { storeToRefs } from 'pinia'
-import SSE from '../../assets/sse';
 import BatchProcessingLauncher from '../batch-processing/BatchProcessingLauncher.vue';
 import { useDirectoryStore } from '../../stores/directoryStore';
 import { useAlertStore } from '../../stores/alertStore';
@@ -42,7 +41,6 @@ const alertStore = useAlertStore();
 const directoryStore = useDirectoryStore();
 const selectedPhotoStore = useSelectedPhotoStore();
 const photoListStore = usePhotoListStore();
-const base = import.meta.env.VITE_BASE_URL || '';
 
 const { photoList } = storeToRefs(photoListStore);
 const selection = ref([]);
@@ -61,41 +59,23 @@ const photoSelected = (name) => {
 
 // Get list of photos in selected directory, then stream in metadata for each photo
 const updateList = (directoryPath) => {
+  photoListStore.updateAll([]);
   selection.value = [];
   loadingMetadata.value = true;
   axios.get('/api/directory?path='+encodeURI(directoryPath)).then((result) => {
-      if (result.data.length === 0) {
-        alertStore.alert.send("Directory loaded, but no photos found");
-      } else {
-        photoListStore.updateAll(result.data);
-        loadMetadata();
-      }
-    }).catch((err) => { 
-      loadingMetadata.value = false;
-      photoListStore.updateAll([]);
-      const alertConfig = (err.response && err.response.status === 400) ?
-        {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
-        {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
-      alertStore.alert.send(alertConfig);
-    });
-}
-
-// SSE request to stream in metadata for each photo in the list
-const loadMetadata = () => {
-  const loadMetadataRequest = new SSE(`${base}/api/directory?metadata=true`);
-
-  loadMetadataRequest.onmessage = (msg) => {
-    const { type, status, data } = JSON.parse(msg.data);
-    if (type === 'message' && status === 'success') {
-      photoListStore.updateItem(data);
+    loadingMetadata.value = false;
+    if (result.data.length === 0) {
+      alertStore.alert.send("Directory loaded, but no photos found");
+    } else {
+      photoListStore.updateAll(result.data);
     }
-    else if (type === 'close') {
-      loadingMetadata.value = false;
-      loadMetadataRequest.close();
-    }
-  };
-
-  loadMetadataRequest.stream();
+  }).catch((err) => { 
+    loadingMetadata.value = false;
+    const alertConfig = (err.response && err.response.status === 400) ?
+      {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
+      {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
+    alertStore.alert.send(alertConfig);
+  });
 }
 </script>
 

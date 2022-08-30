@@ -10,7 +10,7 @@ const bingMapsApi = require('../service/map-service');
 /**
  * Get map selection and api key
  */
-router.get('/info', function (req, res) {
+router.get('/info', async function (req, res) {
   const apiProvider = req.query.provider || process.env.SELECTED_MAP_TYPE || 'BING';
   let apiKey = '';
   switch (apiProvider.toUpperCase()) {
@@ -37,7 +37,7 @@ router.get('/info', function (req, res) {
  *   latitude: Number  = Latitude photo was taken
  *   longitude: Number = Longitude photo was taken
  */
-router.get('/timezone', function (req, res) {
+router.get('/timezone', async function (req, res) {
   const metadata = {
     date: req.query.date, 
     time: req.query.time, 

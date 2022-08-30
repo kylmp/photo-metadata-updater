@@ -8,7 +8,7 @@ const validation = require('../utils/validation-utils');
 /**
  * Get app settings
  */
-router.get('/', function(req, res) {
+router.get('/', async function(req, res) {
   const settings = {
     name: process.env.APP_NAME,
     demo: (process.env.DEMO_MODE === 'true') ? true : false,

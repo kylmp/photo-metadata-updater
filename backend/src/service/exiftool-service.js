@@ -1,14 +1,13 @@
-const shell = require('shelljs');
+const shell = require('../utils/async-shell');
 const path = require('path');
-const asyncShell = require('../utils/async-shell');
-const coordinatesUtils = require('../utils/coordinates-utils');
 const datetimeUtils = require('../utils/datetime-utils');
 const bingMapsApi = require('./map-service');
-const directoryService = require('./directory-service');
+const directory = require('./directory-service');
 
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
-const options = '-overwrite_original -q -q';
+const setOptions = '-q -q';
+const getOptions = '-json -c "%+.8f" -n -q -CreateDate -DateTimeOriginal -ModifyDate -OffsetTime -OffsetTimeOriginal -OffsetTimeDigitized -GPSAltitude -GPSDateTime -GPSLatitude -GPSLongitude -FileTypeExtension -ImageSize -FileName -FileSize -ProjectionType';
 
 let exiftool = process.env.EXIFTOOL_PATH || 'exiftool';
 if (exiftool === 'bundled') {
@@ -17,73 +16,100 @@ if (exiftool === 'bundled') {
     path.join(__dirname, '../../exiftool/exiftool');
 }
 
+const supportedImageTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg', '.png'];
+
 module.exports = {
-  getMetadata: async function(name) {
-    const file = `${directoryService.getDirectory()}/${name}`;
-    const rawExifData = await asyncShell.exec(`"${exiftool}" "${file}"`).catch(err => {throw err});
-    const exifDataMap = new Map(rawExifData.split(/\r?\n/).map(metadataLine => {
-      const metadataParts = metadataLine.split(': ').map(metadataPart => metadataPart.trim());
-      return [metadataParts[0], metadataParts[1]];
-    }));
-
-    const locdatetime = exifDataMap.get('Date/Time Original') || exifDataMap.get('Create Date') || exifDataMap.get('Modify Date') || defaultDate;
-    const {date, time, datetime} = datetimeUtils.parseDatetime(locdatetime);
-    const {latitude, longitude} = coordinatesUtils.geotagToCoordinates(exifDataMap.get('GPS Position'));
-
-    return { 
-      'name': exifDataMap.get('File Name') || unknown, 
-      'size': exifDataMap.get('File Size') || unknown,
-      'date': date,
-      'time': time,
-      'timezone': determineTimezone(exifDataMap, datetime),
-      'resolution': exifDataMap.get('Image Size') || unknown,
-      'projection': exifDataMap.get('Projection Type') || 'default',
-      'latitude': latitude,
-      'longitude': longitude,
-      'elevation': mapElevation(exifDataMap.get('GPS Altitude') || '0 m Above') || 0,
-      'type': exifDataMap.get('File Type Extension') || unknown,
-      'isGeotagged': latitude !== 0 && longitude !== 0
-    };
+  getMetadata: function(name) {
+    const command = `"${exiftool}" ${getOptions} "${directory.getDirectory()}/${name}"`;
+    return shell.exec(command).then(rawMetadata => {
+      return mapMetadata(JSON.parse(rawMetadata)[0]);
+    }).catch(err => { throw err });
   },
 
-  setMetadata: async function(metadata) {
+  getAllMetadata: function() {
+    const getAllMetadataForImageType = supportedImageTypes.map(imgType => {
+      return shell.exec(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*${imgType}`).catch(err => {
+        if (!(typeof err === 'string' && err.includes('File not found'))) throw err;
+      });
+    });
+
+    return Promise.all(getAllMetadataForImageType).then(allImageTypeMetadata => {
+      return allImageTypeMetadata
+        .filter(exifMetadataForImgType => exifMetadataForImgType != undefined)
+        .map(exifMetadataForImgType => JSON.parse(exifMetadataForImgType))
+        .flat()
+        .map(imageExifMetadata => mapMetadata(imageExifMetadata));
+    }).catch(err => { throw err });
+  },
+
+  setMetadata: async function(metadata, saveBackup = false) {
     if (metadata.timezone === 'calculate') {
       metadata.timezone = datetimeUtils.encodeOffset(
         await bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
     }
 
-    const file = `${directoryService.getDirectory()}/${metadata.name}`;
+    const options = (saveBackup) ? setOptions : `${setOptions} -overwrite_original`;
+    const file = `${directory.getDirectory()}/${metadata.name}`;
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);
     const elevation = buildElevationExifFields(metadata.elevation);
     const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
-
     const command = `"${exiftool}" "${file}" ${options} ${coordinates} ${elevation} ${datetime}`;
 
-    if (shell.exec(command).code !== 0) {
-      console.log(`Error setting metadata photo=${metadata.name}`);
-      throw new Error('exiftool error');
-    }
-    return await module.exports.getMetadata(metadata.name).catch(err => console.log(err));
+    return shell.exec(command).then(() => {
+      return module.exports.getMetadata(metadata.name).catch(err => { throw err });
+    }).catch(err => { throw err });
+  },
+
+  deleteBackups: function() {
+    const command = `"${exiftool}" "${directory.getDirectory()}" -delete_original! -q`;
+    return shell.exec(command).catch(err => { throw err });
+  },
+
+  restoreBackups: function() {
+    const command = `"${exiftool}" "${directory.getDirectory()}" -restore_original -q`;
+    return shell.exec(command).catch(err => { throw err });
   },
 
   isAvailable: function() {
-    return shell.exec(`"${exiftool}" -ver`, {silent: true}).code === 0;
+    return require('shelljs').exec(`"${exiftool}" -ver`, {silent: true}).code === 0;
   }
 }
 
-function mapElevation(elevation) {
-  let split = elevation.split(" ");
-  let value = split[0];
-  return Number((split[2] === "Below") ? `-${value}` : value);
+function mapMetadata(exifMetadata) {
+  const {date, time, datetime} = datetimeUtils.parseDatetime(exifMetadata.DateTimeOriginal || exifMetadata.CreateDate || exifMetadata.ModifyDate || defaultDate);
+  const latitude = exifMetadata.GPSLatitude || 0;
+  const longitude = exifMetadata.GPSLongitude || 0;
+  return { 
+    'name': exifMetadata.FileName || unknown, 
+    'size': formatBytes(exifMetadata.FileSize || 0),
+    'date': date,
+    'time': time,
+    'timezone': determineTimezone(exifMetadata, datetime),
+    'resolution': (exifMetadata.ImageSize || unknown).replaceAll(' ', 'x'),
+    'projection': exifMetadata.ProjectionType || 'default',
+    'latitude': latitude,
+    'longitude': longitude,
+    'elevation': exifMetadata.GPSAltitude || 0,
+    'type': exifMetadata.FileTypeExtension || unknown,
+    'isGeotagged': latitude !== 0 && longitude !== 0
+  };
 }
 
-function determineTimezone(exifDataMap, createDate) {
-  // 1. Try to get from OffsetTime/OffsetTimeOriginal exif metadata
-  // 2. If not present, try to calculate offset from difference in GPS time (UTC) vs create date (local)
-  // 3. If GPS time not present, then set timezone offset to unknown as we cannot determine it
-  let timezoneOffset = exifDataMap.get('Offset Time Original') || exifDataMap.get('Offset Time Digitized') || exifDataMap.get('Offset Time') || unknown;
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const power = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${parseFloat((bytes / Math.pow(1024, power)).toFixed(decimals < 0 ? 0 : decimals))} ${sizes[power]}`;
+}
+
+
+/* 1. Try to get from timezone exif metadata
+ * 2. If not present, try to calculate offset from difference in GPS time (UTC) vs create date (local)
+ * 3. If GPS time not present, then set timezone offset to unknown as we cannot determine it */
+function determineTimezone(exifMetadata, createDate) {
+  let timezoneOffset = exifMetadata.OffsetTimeOriginal || exifMetadata.OffsetTimeDigitized || exifMetadata.OffsetTime || unknown;
   if (timezoneOffset === unknown) {
-    const gpsDatetime = datetimeUtils.parseDatetime(exifDataMap.get('GPS Date/Time') || defaultDate).datetime;
+    const gpsDatetime = datetimeUtils.parseDatetime(exifMetadata.GPSDateTime || defaultDate).datetime;
     timezoneOffset = (gpsDatetime !== defaultDate) ? datetimeUtils.determineOffset(gpsDatetime, createDate) : unknown;
   }
   return timezoneOffset;

@@ -19,5 +19,5 @@ module.exports = {
 }
 
 function pushUpdate(res, type, status, data) {
-  res.write(`data: ${JSON.stringify({ type, status, data })}\n\n`)
+  res.write(`data: ${JSON.stringify({ type, status, data })}\n\n`);
 }

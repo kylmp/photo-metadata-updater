@@ -4,11 +4,11 @@
     <v-row id="confirmation-header">
       <span class="text-h6">{{title}}</span>
       <v-spacer></v-spacer>
-      <v-icon size="large" v-if="processing.status !== 'processing'" @click="closeWindow" style="opacity: 0.5">mdi-window-close</v-icon>
+      <v-icon size="large" v-if="processing.status === 'unprocessed'" @click="closeWindow(false)" style="opacity: 0.5">mdi-window-close</v-icon>
     </v-row>
     <v-row v-if="processing.status === 'unprocessed'">
       <v-list density="compact" class="mb-n4">
-        <v-list-subheader>Updating {{numberAffected}} Photo{{numberAffected === 1 ? '' : 's'}}</v-list-subheader>
+        <v-list-subheader>Updating {{total}} Photo{{total === 1 ? '' : 's'}}</v-list-subheader>
         <v-list-item v-for="item in summaryItems" :key="item.key">
           <template v-slot:prepend><v-icon :icon="item.icon"></v-icon></template>
           <v-list-item-title>{{item.text}}</v-list-item-title>
@@ -18,7 +18,7 @@
     <v-row v-if="processing.status === 'processing'">
       <v-row justify="center" align="center" class="text-center" style="height: 300px">
         <v-progress-circular :model-value="processing.percent" color="primary" width="10" size="120">
-          {{processing.count}}/{{numberAffected}}
+          {{processing.count.processed}}/{{total}}
         </v-progress-circular>
       </v-row>
     </v-row>
@@ -33,31 +33,35 @@
     </v-row>
   </v-container>
   <v-card-actions>
-    <v-btn v-if="processing.status !== 'processed'" block color="img-name" @click="process" :disabled="processing.status === 'processing'">
-      Confirm and Process Photos
-    </v-btn>
-    <v-btn v-if="processing.status === 'processed'" block color="img-name" @click="closeWindow">
-      Close
-    </v-btn>
+    <v-btn v-if="processing.status === 'unprocessed'" block color="img-name" @click="process">Confirm and Process Photos</v-btn>
+    <v-btn v-if="processing.status === 'processing'" block color="error" @click="cancel">Cancel</v-btn>
+    <v-btn v-if="processing.status === 'processed' && !canRevert" plain width="100%" @click="closeWindow(false)">Close</v-btn>
+    <v-btn v-if="processing.status === 'processed' && canRevert" plain width="50%" @click="revert">Revert Changes</v-btn>
+    <v-btn v-if="processing.status === 'processed' && canRevert" plain width="50%" color="img-name" @click="confirm">Confirm Changes</v-btn>
   </v-card-actions>
 </v-card>
 </template> 
 
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { useBatchProcessingStore } from '../../stores/batchProcessingStore'
 import { usePhotoListStore } from '../../stores/photoListStore'
+import { useAlertStore } from '../../stores/alertStore';
 import SSE from '../../assets/sse';
 
 const emit = defineEmits(['close']);
+const axios = inject('axios');
 
 const batchProcessingStore = useBatchProcessingStore();
 const photoListStore = usePhotoListStore();
+const alertStore = useAlertStore();
 
 var batchUpdateRequest;
 const base = import.meta.env.VITE_BASE_URL || '';
-const numberAffected = batchProcessingStore.filteredList.length;
+const total = batchProcessingStore.filteredList.length;
+const batchUpdateResults = [];
 
+const canRevert = ref(false);
 const summaryItems = ref([]);
 const title = ref('Batch Update Summary');
 const result = ref({text: '', subtext: '', icon: ''});
@@ -100,9 +104,9 @@ const process = () => {
   title.value = 'Processing...';
   processing.value = {
     status: 'processing', 
-    count: 0, 
+    count: {processed: 0, success: 0, error: 0},
     percent: 0, 
-    step: 100/numberAffected,
+    step: 100/total,
     errors: []
   };
 
@@ -115,7 +119,7 @@ const process = () => {
   batchUpdateRequest.stream();
 }
 
-const handle500Error = (err) => {
+const handle500Error = () => {
   processing.value.status = 'processed';
   title.value = 'Error';
   result.value.text = 'Error connecting to server';
@@ -134,37 +138,51 @@ const batchUpdateMessageHandler = (msg) => {
 
 const handlePhotoUpdated = (status, data) => {
   if (status === 'success') {
-    photoListStore.updateItem(data);
+    processing.value.count.success++;
+    batchUpdateResults.push(data);
   } else {
+    processing.value.count.error++;
     processing.value.errors.push(data);
   }
-  processing.value.count++;
+  processing.value.count.processed++;
   processing.value.percent += processing.value.step;
 }
 
 const handleRequestCompletion = (status) => {
   processing.value.status = 'processed';
+  title.value = '';
 
   if (status === 'success') {
-    const countTotal = processing.value.count;
-    const countSuccess = processing.value.count - processing.value.errors.length;
-    const countError = processing.value.errors.length;
-    const state = (countSuccess === countTotal) ? 'success' : (countError === countTotal) ? 'error' : 'partial';
+    processing.value.count.unprocessed = total - processing.value.count.processed;
+    const {success, error, unprocessed} = processing.value.count;
+    const state = (success === total) ? 'success' : (error === total) ? 'error' : (unprocessed === total) ? 'unprocessed' : 'partial';
     switch(state) {
       case 'success':
         title.value = 'Success';
-        result.value.text = `Updated ${countSuccess} photo${countSuccess === 1 ? '' : 's'}`;
+        result.value.text = `Updated ${success} photo${success === 1 ? '' : 's'}`;
         result.value.icon = 'mdi-check-bold';
+        canRevert.value = true;
         break;
       case 'partial':
         title.value = `Partial Update`;
-        result.value.text = `${countSuccess} photo${countSuccess === 1 ? '' : 's'} updated\n${countError} photo${countError === 1 ? '' : 's'} failed to update`;
-        result.value.subtext = getErrorSubtext();
+        let resultText = `${success} photo${success === 1 ? '' : 's'} updated`;
+        resultText += (unprocessed > 0) ? `\n${unprocessed} photo${unprocessed === 1 ? '' : 's'} were not processed` : '';
+        resultText += (error > 0) ? `\n${error} photo${error === 1 ? '' : 's'} failed to update` : '';
+        result.value.text = resultText;
+        result.value.subtext = (error > 0) ? getErrorSubtext() : '';
+        canRevert.value = true;
+        break;
+      case 'unprocessed':
+        title.value = 'Unprocessed';
+        result.value.text = `All ${total} photo${total === 1 ? '' : 's'} were not processed`;
+        result.value.icon = 'mdi-alert-circle';
+        canRevert.value = false;
         break;
       case 'error':
         title.value = 'Error';
-        result.value.text = `All ${countError} photo${countError === 1 ? '' : 's'} failed to update!`;
+        result.value.text = `All ${total} photo${total === 1 ? '' : 's'} failed to update!`;
         result.value.subtext = getErrorSubtext();
+        canRevert.value = false;
         break;
     }
   } else {
@@ -195,8 +213,27 @@ const getErrorSubtext = () => {
   return subtext;
 }
 
-const closeWindow = () => {
-  emit('close', (title.value !== 'Error' && title.value !== 'Batch Update Summary'));
+const cancel = () => {
+  axios.get('/api/metadata/cancel-batch-update');
+}
+
+const revert = () => {
+  axios.get('/api/metadata/backup').then(() => {
+    alertStore.alert.send("Batch update changes were reverted")
+  });
+  closeWindow(false);
+}
+
+const confirm = () => {
+  axios.delete('/api/metadata/backup');
+  for (const updatedMetadata of batchUpdateResults) {
+    photoListStore.updateItem(updatedMetadata);
+  }
+  closeWindow(true);
+}
+
+const closeWindow = (refresh) => {
+  emit('close', refresh);
 }
 
 populateSummaryText();
