@@ -1,4 +1,4 @@
-const shell = require('../utils/async-shell');
+const shell = require('../module/shell');
 const path = require('path');
 const datetimeUtils = require('../utils/datetime-utils');
 const bingMapsApi = require('./map-service');
@@ -21,14 +21,14 @@ const supportedImageTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg'
 module.exports = {
   getMetadata: function(name) {
     const command = `"${exiftool}" ${getOptions} "${directory.getDirectory()}/${name}"`;
-    return shell.exec(command).then(rawMetadata => {
+    return shell.async(command).then(rawMetadata => {
       return mapMetadata(JSON.parse(rawMetadata)[0]);
     }).catch(err => { throw err });
   },
 
   getAllMetadata: function() {
     const getAllMetadataForImageType = supportedImageTypes.map(imgType => {
-      return shell.exec(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*${imgType}`).catch(err => {
+      return shell.async(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*${imgType}`).catch(err => {
         if (!(typeof err === 'string' && err.includes('File not found'))) throw err;
       });
     });
@@ -55,23 +55,23 @@ module.exports = {
     const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
     const command = `"${exiftool}" "${file}" ${options} ${coordinates} ${elevation} ${datetime}`;
 
-    return shell.exec(command).then(() => {
+    return shell.async(command).then(() => {
       return module.exports.getMetadata(metadata.name).catch(err => { throw err });
     }).catch(err => { throw err });
   },
 
   deleteBackups: function() {
     const command = `"${exiftool}" "${directory.getDirectory()}" -delete_original! -q`;
-    return shell.exec(command).catch(err => { throw err });
+    return shell.async(command).catch(err => { throw err });
   },
 
   restoreBackups: function() {
     const command = `"${exiftool}" "${directory.getDirectory()}" -restore_original -q`;
-    return shell.exec(command).catch(err => { throw err });
+    return shell.async(command).catch(err => { throw err });
   },
 
   isAvailable: function() {
-    return require('shelljs').exec(`"${exiftool}" -ver`, {silent: true}).code === 0;
+    return shell.sync(`"${exiftool}" -ver`).code === 0;
   }
 }
 

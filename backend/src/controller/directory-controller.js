@@ -26,9 +26,7 @@ router.get('/', async function(req, res) {
   }).catch((err) => {
     console.log(err)
     res.status(500).send();
-  })
-
-  // res.status(200).send(exif.getAllMetadata());
+  });
 });
 
 module.exports = router;
