@@ -99,14 +99,18 @@ router.get('/cancel-batch-update', async function (req, res) {
  * Restore all backed up image files (used after batchupdate revert)
  */
 router.get('/backup', async function (req, res) {
-  exif.restoreBackups() ? res.status(200).send() : res.status(500).send();
+  exif.restoreBackups()
+    .then(() => res.status(200).send())
+    .catch(() => res.status(500).send());
 });
 
 /**
  * Delete all backed up image files (used after batchupdate confirmation)
  */
  router.delete('/backup', async function (req, res) {
-  exif.deleteBackups() ? res.status(200).send() : res.status(500).send();
+  exif.deleteBackups()
+    .then(() => res.status(200).send())
+    .catch(() => res.status(500).send());
 });
 
 module.exports = router;

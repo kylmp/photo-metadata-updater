@@ -4,6 +4,7 @@ const datetimeUtils = require('../utils/datetime-utils');
 const bingMapsApi = require('./map-service');
 const directory = require('./directory-service');
 
+const supportedImageTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg', '.png'];
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
 const setOptions = '-q -q';
@@ -15,8 +16,6 @@ if (exiftool === 'bundled') {
     path.join(path.dirname(process.execPath), './exiftool/exiftool') : 
     path.join(__dirname, '../../exiftool/exiftool');
 }
-
-const supportedImageTypes = process.env.SUPPORTED_FILE_TYPES || ['.jpg', '.jpeg', '.png'];
 
 module.exports = {
   getMetadata: function(name) {
@@ -103,14 +102,14 @@ function formatBytes(bytes, decimals = 2) {
 }
 
 
-/* 1. Try to get from timezone exif metadata
- * 2. If not present, try to calculate offset from difference in GPS time (UTC) vs create date (local)
- * 3. If GPS time not present, then set timezone offset to unknown as we cannot determine it */
-function determineTimezone(exifMetadata, createDate) {
-  let timezoneOffset = exifMetadata.OffsetTimeOriginal || exifMetadata.OffsetTimeDigitized || exifMetadata.OffsetTime || unknown;
-  if (timezoneOffset === unknown) {
-    const gpsDatetime = datetimeUtils.parseDatetime(exifMetadata.GPSDateTime || defaultDate).datetime;
-    timezoneOffset = (gpsDatetime !== defaultDate) ? datetimeUtils.determineOffset(gpsDatetime, createDate) : unknown;
+/* 1. Try to get offset from timezone exif metadata
+ * 2. Try to calculate offset from difference in GPS time (UTC) vs create date (local)
+ * 3. Otherwise, return 'unknown' */
+function determineTimezone(exifMetadata, localDateTime) {
+  const timezoneOffset = exifMetadata.OffsetTimeOriginal || exifMetadata.OffsetTimeDigitized || exifMetadata.OffsetTime || unknown;
+  if (timezoneOffset === unknown && 'GPSDateTime' in exifMetadata) {
+    const utcDateTime = datetimeUtils.parseDatetime(exifMetadata.GPSDateTime).datetime;
+    return datetimeUtils.determineOffset(utcDateTime, localDateTime);
   }
   return timezoneOffset;
 }
@@ -127,18 +126,18 @@ function buildCoordinatesExifFields(lat, lon) {
   return `"-GPSLatitude=${lat}" "-GPSLongitude=${lon}" "-GPSLatitudeRef=${latRef}" "-GPSLongitudeRef=${lonRef}"`;
 }
 
-function buildDatetimeExifFields(date, time, timezoneOffset) {
+function buildDatetimeExifFields(date, time, offset) {
   // Get values for local time
   const datetime = `${date} ${time}`;
   const cmdLocal = `"-DateTimeOriginal=${datetime}" "-CreateDate=${datetime}" "-ModifyDate=${datetime}"`;
 
   // Get values for UTC time (GPS date/time tags should be in UTC)
-  const {date: utcDate, time: utcTime} = datetimeUtils.offsetDatetime(timezoneOffset, date, time);
+  const {date: utcDate, time: utcTime} = datetimeUtils.offsetDatetime(offset, date, time);
   const utcDatetime = `${utcDate} ${utcTime}`;
   const cmdGps = `"-GPSDateTime=${utcDatetime}" "-GPSDateStamp=${utcDate}" "-GPSTimeStamp=${utcTime}"`;
 
   // Set the timezone offset
-  const cmdOffset = `"-OffsetTimeOriginal=${timezoneOffset}" "-OffsetTime=${timezoneOffset}" "-OffsetTimeDigitized=${timezoneOffset}"`
+  const cmdOffset = `"-OffsetTimeOriginal=${offset}" "-OffsetTime=${offset}" "-OffsetTimeDigitized=${offset}"`
 
   return `${cmdLocal} ${cmdGps} ${cmdOffset}`;
 }
