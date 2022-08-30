@@ -1,7 +1,7 @@
 {
   "author": "klymp",
   "name": "photo-metadata-updater-backend",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Backend (nodejs) - Update photo metadata easily",
   "private": true,
   "main": "photo-metadata-updater.js",

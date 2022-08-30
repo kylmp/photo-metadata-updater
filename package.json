@@ -2,7 +2,7 @@
   "author": "klymp",
   "license": "ISC",
   "name": "photo-metadata-updater",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Update photo metadata easily",
   "private": true,
   "scripts": {
