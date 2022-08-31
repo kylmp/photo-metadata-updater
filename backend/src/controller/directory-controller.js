@@ -3,28 +3,28 @@
  *   route: /api/directory 
  */
 const router = require('express').Router();
-const directory = require('../service/directory-service');
+const directory = require('../middleware/directory');
 const exif = require('../service/exiftool-service');
 
 /**
- * Get list of photos in a directory
+ * Update the selected directory
  * 
- * Query Params [path]
- *   path: String = directory path to load photos from
+ * Request Body
+ *   directory: String = directory (full path) to load photos from
+ * 
+ * Returns a list of all of the photo metadata in that directory
  */
-router.get('/', async function(req, res) {
-  const dir = (process.env.DEMO_MODE === 'true') ? process.env.DEMO_DIR : (req.query.path || directory.getDirectory());
+router.put('/', async function(req, res) {
+  const dir = (process.env.DEMO_MODE === 'true') ? process.env.DEMO_DIR : (req.body.directory || '');
 
-  const dirStatus = directory.setDirectory(dir);
-  if (dirStatus !== 200) {
-    res.status(dirStatus).send();
+  if (dir === '' || !directory.update(dir)) {
+    res.status(400).send((dir === '') ? 'directory required' : 'directory does not exist');
     return;
   }
 
   exif.getAllMetadata().then(metadata => {
     res.status(200).send(metadata);
-  }).catch((err) => {
-    console.log(err)
+  }).catch(() => {
     res.status(500).send();
   });
 });

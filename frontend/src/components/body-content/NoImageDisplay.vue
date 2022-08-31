@@ -34,7 +34,7 @@ const update = (type) => {
       break;
     case 'demo':
       title.value = 'Demo Mode'
-      body.value = 'Enter any value into the directory search bar above, then press enter to load photos'
+      body.value = 'Simply press the FETCH button above to load a list of photos'
       break;
     default:
       title.value = 'No Image Selected'

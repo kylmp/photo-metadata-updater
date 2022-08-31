@@ -2,9 +2,9 @@ const shell = require('../module/shell');
 const path = require('path');
 const datetimeUtils = require('../utils/datetime-utils');
 const bingMapsApi = require('./map-service');
-const directory = require('./directory-service');
+const directory = require('../middleware/directory');
 
-const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").split(' ');
+const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").toLowerCase().split(' ');
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
 const setOptions = '-q -q';
@@ -19,7 +19,7 @@ if (exiftool === 'bundled') {
 
 module.exports = {
   getMetadata: function(name) {
-    const command = `"${exiftool}" ${getOptions} "${directory.getDirectory()}/${name}"`;
+    const command = `"${exiftool}" ${getOptions} "${directory.get()}/${name}"`;
     return shell.async(command).then(rawMetadata => {
       return mapMetadata(JSON.parse(rawMetadata)[0]);
     }).catch(err => { throw err });
@@ -27,7 +27,7 @@ module.exports = {
 
   getAllMetadata: function() {
     const getAllMetadataForImageType = supportedImageTypes.map(imgType => {
-      return shell.async(`"${exiftool}" ${getOptions} "${directory.getDirectory()}/"*.${imgType}`).catch(err => {
+      return shell.async(`"${exiftool}" ${getOptions} "${directory.get()}/"*.${imgType}`).catch(err => {
         if (!(typeof err === 'string' && err.includes('File not found'))) throw err;
       });
     });
@@ -48,7 +48,7 @@ module.exports = {
     }
 
     const options = (saveBackup) ? setOptions : `${setOptions} -overwrite_original`;
-    const file = `${directory.getDirectory()}/${metadata.name}`;
+    const file = `${directory.get()}/${metadata.name}`;
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);
     const elevation = buildElevationExifFields(metadata.elevation);
     const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
@@ -60,12 +60,12 @@ module.exports = {
   },
 
   deleteBackups: function() {
-    const command = `"${exiftool}" "${directory.getDirectory()}" -delete_original! -q`;
+    const command = `"${exiftool}" "${directory.get()}" -delete_original! -q`;
     return shell.async(command).catch(err => { throw err });
   },
 
   restoreBackups: function() {
-    const command = `"${exiftool}" "${directory.getDirectory()}" -restore_original -q`;
+    const command = `"${exiftool}" "${directory.get()}" -restore_original -q`;
     return shell.async(command).catch(err => { throw err });
   },
 
@@ -100,7 +100,6 @@ function formatBytes(bytes, decimals = 2) {
   const power = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${parseFloat((bytes / Math.pow(1024, power)).toFixed(decimals < 0 ? 0 : decimals))} ${sizes[power]}`;
 }
-
 
 /* 1. Try to get offset from timezone exif metadata
  * 2. Try to calculate offset from difference in GPS time (UTC) vs create date (local)

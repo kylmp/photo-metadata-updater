@@ -1,6 +1,6 @@
 var router = require('express').Router();
 
-const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").split(' ');
+const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").toLowerCase().split(' ');
 
 router.get('/*', function (req, res, next) {
   const url = req.url.toLowerCase();

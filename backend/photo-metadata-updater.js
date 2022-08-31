@@ -48,9 +48,9 @@ require('fs').readdirSync(path.join(__dirname, 'src/controller')).forEach(contro
   app.use(`/api/${controller.split('-')[0]}`, require(`./src/controller/${controller}`))
 });
 
-// Add IMG route validation, dynamically changing static folder
+// Add IMG route validation, dynamically changing photo directory (static middleware)
 app.use('/img', require('./src/middleware/image-validator'));
-app.use('/img', require('./src/middleware/image-folder'));
+app.use('/img', require('./src/middleware/directory'));
 
 // Start server
 const server = app.listen(process.env.APP_PORT, () => {

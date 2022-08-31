@@ -58,11 +58,11 @@ const photoSelected = (name) => {
 }
 
 // Get list of photos in selected directory, then stream in metadata for each photo
-const updateList = (directoryPath) => {
+const updateList = (directory) => {
   photoListStore.updateAll([]);
   selection.value = [];
   loadingMetadata.value = true;
-  axios.get('/api/directory?path='+encodeURI(directoryPath)).then((result) => {
+  axios.put('/api/directory', {directory: directory}).then((result) => {
     loadingMetadata.value = false;
     if (result.data.length === 0) {
       alertStore.alert.send("Directory loaded, but no photos found");
@@ -71,9 +71,16 @@ const updateList = (directoryPath) => {
     }
   }).catch((err) => { 
     loadingMetadata.value = false;
-    const alertConfig = (err.response && err.response.status === 400) ?
-      {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"} :
-      {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"};
+
+    let alertConfig;
+    if (err.response && err.response.status === 400) {
+      alertConfig = err.response.data === 'directory required' ? 
+        {timeout: 5000, color: 'primary', message: "Directory path required!"} :
+        {timeout: 5000, color: 'primary', message: "Directory not found, make sure to use the full path"};
+    }
+    else {
+      alertConfig = {timeout: 5000, color: 'error', message: "Error loading photo list, is the app still running?"}
+    }
     alertStore.alert.send(alertConfig);
   });
 }

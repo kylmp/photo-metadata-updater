@@ -13,18 +13,12 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAlertStore } from '../../stores/alertStore';
 import { useDirectoryStore } from '../../stores/directoryStore';
 
 const directoryStore = useDirectoryStore();
-const alertStore = useAlertStore();
 const directory = ref('');
 
 const updateDirectory = () => {
-  if (!directory.value) {
-    alertStore.alert.error("Directory path required!");
-    return;
-  }
   directoryStore.update(directory.value);
 }
 </script>
