@@ -12,8 +12,6 @@ Node.js backend, Vue.js frontend. Runs on Mac/Unix systems, not tested on Window
 
 ### Please make backups of all photos before using the app and editing metadata, in case of unexpected errors.
 
-### [Live Demo](http://pmu-demo.kylmp.com/) (Note: Metadata is reset every 3 hours)
-
 # Run App Guide
 
 1. Download the [latest release](https://github.com/kylmp/photo-metadata-updater/releases/latest) based on your system
