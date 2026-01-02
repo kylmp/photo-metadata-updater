@@ -1,7 +1,7 @@
 const shell = require('../module/shell');
 const path = require('path');
 const datetimeUtils = require('../utils/datetime-utils');
-const bingMapsApi = require('./map-service');
+const timezoneService = require('../utils/timezone-utils');
 const directory = require('../middleware/directory');
 
 const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").toLowerCase().split(' ');
@@ -44,7 +44,7 @@ module.exports = {
   setMetadata: async function(metadata, saveBackup = false) {
     if (metadata.timezone === 'calculate') {
       metadata.timezone = datetimeUtils.encodeOffset(
-        await bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
+        await timezoneService.calculateTimezoneOffset(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
     }
 
     const options = (saveBackup) ? setOptions : `${setOptions} -overwrite_original`;
@@ -78,6 +78,7 @@ function mapMetadata(exifMetadata) {
   const {date, time, datetime} = datetimeUtils.parseDatetime(exifMetadata.DateTimeOriginal || exifMetadata.CreateDate || exifMetadata.ModifyDate || defaultDate);
   const latitude = exifMetadata.GPSLatitude || 0;
   const longitude = exifMetadata.GPSLongitude || 0;
+  const elevation = (exifMetadata.GPSAltitude || 0) === "undef" ? 0 : (exifMetadata.GPSAltitude || 0);
   return { 
     'name': exifMetadata.FileName || unknown, 
     'size': formatBytes(exifMetadata.FileSize || 0),
@@ -88,7 +89,7 @@ function mapMetadata(exifMetadata) {
     'projection': exifMetadata.ProjectionType || 'default',
     'latitude': latitude,
     'longitude': longitude,
-    'elevation': exifMetadata.GPSAltitude || 0,
+    'elevation': elevation,
     'type': exifMetadata.FileTypeExtension || unknown,
     'isGeotagged': latitude !== 0 && longitude !== 0
   };

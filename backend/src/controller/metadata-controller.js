@@ -4,6 +4,8 @@
  */
 const router = require('express').Router();
 const validation = require('../utils/validation-utils');
+const datetimeUtils = require('../utils/datetime-utils');
+const timezoneUtils = require('../utils/timezone-utils');
 const exif = require('../service/exiftool-service');
 const sse = require('../utils/sse-utils');
 
@@ -111,6 +113,36 @@ router.get('/backup', async function (req, res) {
   exif.deleteBackups()
     .then(() => res.status(200).send())
     .catch(() => res.status(500).send());
+});
+
+/**
+ * Calculate timezone offset from coordinates, date, and time 
+ * 
+ * Query Params [date, time, latitude, longitude]
+ *   name: String      = Date photo was taken
+ *   time: String      = Time photo was taken
+ *   latitude: Number  = Latitude photo was taken
+ *   longitude: Number = Longitude photo was taken
+ */
+router.get('/calculate-timezone', async function (req, res) {
+  const metadata = {
+    date: req.query.date, 
+    time: req.query.time, 
+    latitude: Number(req.query.lat), 
+    longitude: Number(req.query.lon)
+  };
+
+  const errorMsg = validation.validateMetadata(metadata, ['timezone', 'elevation']);
+  if (errorMsg !== '') {
+    res.status(400).send(errorMsg);
+    return;
+  }
+
+  timezoneUtils.calculateTimezoneOffset(metadata.latitude, metadata.longitude, metadata.date, metadata.time).then(offset => {
+    res.status(200).send(datetimeUtils.encodeOffset(offset));
+  }).catch(err => {
+    res.status(500).send(err.message);
+  });
 });
 
 module.exports = router;

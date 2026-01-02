@@ -9,12 +9,12 @@ const selctedDirectory = (req, res, next) => {
 }
 
 selctedDirectory.update = (newDirectory) => {
-  if (directory === newDirectory) return true;
-  if (!fileSystem.existsSync(newDirectory)) return false;
-  
-  directory = newDirectory;
-  static = express.static(newDirectory);
-  return true;
+  if (fileSystem.existsSync(newDirectory)) {
+    directory = newDirectory;
+    static = express.static(newDirectory);
+    return true;
+  }
+  return false;
 }
 
 selctedDirectory.get = () => {
