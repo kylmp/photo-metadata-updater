@@ -37,8 +37,8 @@ if (process.env.CORS_ORIGIN) {
 }
 
 // Supported request body parsers
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false, limit: '1gb' }));
+app.use(bodyParser.json({ limit: '1gb' }));
 
 // Host static frontend files
 app.use(express.static(path.join(__dirname, '../public')));

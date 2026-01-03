@@ -1,14 +1,14 @@
 const shell = require('../module/shell');
 const path = require('path');
 const datetimeUtils = require('../utils/datetime-utils');
-const bingMapsApi = require('./map-service');
+const timezoneUtils = require('../utils/timezone-utils');
 const directory = require('../middleware/directory');
 
 const supportedImageTypes = (process.env.SUPPORTED_IMAGE_TYPES || "jpg jpeg png").toLowerCase().split(' ');
 const unknown = 'unknown';
 const defaultDate = "1970-01-01 00:00:00";
 const setOptions = '-q -q';
-const getOptions = '-json -c "%+.8f" -n -q -CreateDate -DateTimeOriginal -ModifyDate -OffsetTime -OffsetTimeOriginal -OffsetTimeDigitized -GPSAltitude -GPSDateTime -GPSLatitude -GPSLongitude -FileTypeExtension -ImageSize -FileName -FileSize -ProjectionType';
+const getOptions = '-json -c "%+.8f" -n -q';
 
 let exiftool = process.env.EXIFTOOL_PATH || 'exiftool';
 if (exiftool === 'bundled') {
@@ -44,7 +44,7 @@ module.exports = {
   setMetadata: async function(metadata, saveBackup = false) {
     if (metadata.timezone === 'calculate') {
       metadata.timezone = datetimeUtils.encodeOffset(
-        await bingMapsApi.getTzOffsetFromCoordinates(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
+        await timezoneUtils.calculateTimezoneOffset(metadata.latitude, metadata.longitude, metadata.date, metadata.time));
     }
 
     const options = (saveBackup) ? setOptions : `${setOptions} -overwrite_original`;
@@ -52,7 +52,8 @@ module.exports = {
     const coordinates = buildCoordinatesExifFields(metadata.latitude, metadata.longitude);
     const elevation = buildElevationExifFields(metadata.elevation);
     const datetime = buildDatetimeExifFields(metadata.date, metadata.time, metadata.timezone);
-    const command = `"${exiftool}" "${file}" ${options} ${coordinates} ${elevation} ${datetime}`;
+    const modified = buildFileModificationFields(metadata.date, metadata.time, metadata.timezone);
+    const command = `"${exiftool}" "${file}" ${options} ${coordinates} ${elevation} ${datetime} ${modified}`;
 
     return shell.async(command).then(() => {
       return module.exports.getMetadata(metadata.name).catch(err => { throw err });
@@ -78,6 +79,7 @@ function mapMetadata(exifMetadata) {
   const {date, time, datetime} = datetimeUtils.parseDatetime(exifMetadata.DateTimeOriginal || exifMetadata.CreateDate || exifMetadata.ModifyDate || defaultDate);
   const latitude = exifMetadata.GPSLatitude || 0;
   const longitude = exifMetadata.GPSLongitude || 0;
+  const elevation = (exifMetadata.GPSAltitude || 0) === "undef" ? 0 : (exifMetadata.GPSAltitude || 0);
   return { 
     'name': exifMetadata.FileName || unknown, 
     'size': formatBytes(exifMetadata.FileSize || 0),
@@ -88,9 +90,10 @@ function mapMetadata(exifMetadata) {
     'projection': exifMetadata.ProjectionType || 'default',
     'latitude': latitude,
     'longitude': longitude,
-    'elevation': exifMetadata.GPSAltitude || 0,
+    'elevation': elevation,
     'type': exifMetadata.FileTypeExtension || unknown,
-    'isGeotagged': latitude !== 0 && longitude !== 0
+    'isGeotagged': latitude !== 0 && longitude !== 0,
+    'raw': exifMetadata
   };
 }
 
@@ -139,4 +142,9 @@ function buildDatetimeExifFields(date, time, offset) {
   const cmdOffset = `"-OffsetTimeOriginal=${offset}" "-OffsetTime=${offset}" "-OffsetTimeDigitized=${offset}"`
 
   return `${cmdLocal} ${cmdGps} ${cmdOffset}`;
+}
+
+function buildFileModificationFields(date, time, offset) {
+  const modificationDatetime = `${date} ${time}${offset}`;
+  return `"-FileInodeChangeDate=${modificationDatetime}" "-FileModifyDate=${modificationDatetime}"`;
 }

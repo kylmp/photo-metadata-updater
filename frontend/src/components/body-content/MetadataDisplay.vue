@@ -5,6 +5,7 @@
         <span>Metadata for </span>
         <span class="text-img-name">{{metadata.name}}</span>
         <span class="text-resolution pl-2">({{metadata.size}}, {{metadata.resolution}})</span>
+        <span class="text-resolution pl-2 full-metadata-link" @click="fullMetadataDialog = true"><u>full metadata</u></span>
       </div>
     </v-col>
     <v-col sm="4" class="text-right">
@@ -24,14 +25,46 @@
             <v-card-text>
               <b>Saving metadata cannot be undone</b><br>
               It's recommended to make a backup of the photo before saving
+              <div v-if="modifiedFields.length" class="mt-3">
+                <div class="text-subtitle-2">Modified fields</div>
+                <v-table density="compact">
+                  <tbody>
+                    <tr v-for="field in modifiedFields" :key="field.key">
+                      <td class="text-no-wrap">{{ field.label }}</td>
+                      <td class="pl-4 text-caption">
+                        {{ field.oldValue }} -> {{ field.newValue }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </div>
+              <div v-else class="mt-3 text-caption">No changes detected.</div>
             </v-card-text>
             <v-card-actions>
               <v-btn flat @click="dialog = false">Exit</v-btn>
-              <v-btn color="primary" flat @click="saveMetadata">Confirm</v-btn>
+              <v-btn color="img-name" flat @click="saveMetadata">Confirm</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </v-btn>
+      <v-dialog v-model="fullMetadataDialog" max-width="640">
+        <v-card title="Full metadata">
+          <v-card-text>
+            <v-table density="compact">
+              <tbody>
+                <tr v-for="[key, value] in fullMetadataEntries" :key="key">
+                  <td class="text-no-wrap">{{ key }}</td>
+                  <td class="pl-4">{{ value }}</td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn flat @click="fullMetadataDialog = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-col>
   </v-row>
   <v-form ref="form" v-model="valid" lazy-validation>
@@ -46,6 +79,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            :class="{ 'modified-field': isModified('date', createDate) }"
             @keypress="isValidDateChar($event)"
             @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
@@ -59,6 +93,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            :class="{ 'modified-field': isModified('time', createTime) }"
             @keypress="isValidTimeChar($event)"
             @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
@@ -72,6 +107,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            :class="{ 'modified-field': isModified('timezone', offset) }"
             @keypress="isValidTimezoneChar($event)"
             @keydown.enter.prevent="saveMetadata"
           >
@@ -96,6 +132,7 @@
             density="compact"
             hide-details="true"
             suffix="m"
+            :class="{ 'modified-field': isModified('elevation', elevation) }"
             @keypress="isValidNumberChar($event)"
             @keydown.enter.prevent="saveMetadata"
           ></v-text-field>
@@ -109,6 +146,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            :class="{ 'modified-field': isModified('latitude', latitude) }"
             @paste="detectCoordinatesPasted"
             @input="coordinatesUpdate"
             @keypress="isValidNumberChar($event)"
@@ -124,6 +162,7 @@
             variant="outlined"
             density="compact"
             hide-details="true"
+            :class="{ 'modified-field': isModified('longitude', longitude) }"
             @paste="detectCoordinatesPasted"
             @input="coordinatesUpdate"
             @keypress="isValidNumberChar($event)"
@@ -143,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, watch, inject } from 'vue'
+import { ref, watch, inject, computed, onMounted, nextTick } from 'vue'
 import { useCoordinatesStore } from '../../stores/coordinatesStore'
 import { useAlertStore } from '../../stores/alertStore'
 import { useOptionsStore } from '../../stores/optionsStore'
@@ -164,9 +203,19 @@ const saveComplete = ref(false);
 const gettingTimezone = ref(false);
 const tooltipEnabled = ref(optionsStore.showTooltip);
 const saveWarningEnabled = ref(optionsStore.saveWarning);
+const autoTimezoneEnabled = ref(optionsStore.autoTimezone);
 const dialog = ref(false);
+const fullMetadataDialog = ref(false);
 const valid = ref(true);
 const elevation = ref('');
+const originalValues = ref({
+  elevation: '',
+  longitude: '',
+  latitude: '',
+  date: '',
+  time: '',
+  timezone: ''
+});
 const elevationRules = ref([
   v => settingsStore.getRegex('number').test(v) || 'Elevation must be a +/- decimal number',
 ]);
@@ -192,6 +241,31 @@ const offset = ref('');
 const offsetRules = ref([
   v => settingsStore.getRegex('timezone').test(v) || 'Timezone offset must be in format (+/-)HH:MM\nTIP: click the search icon to calculate timezone offset from coordinates',
 ]);
+const isModified = (field, value) => {
+  return String(value ?? '') !== String(originalValues.value[field] ?? '');
+}
+const fullMetadataEntries = computed(() => {
+  const entries = Object.entries(props.metadata?.raw ?? {});
+  return entries.sort(([a], [b]) => a.localeCompare(b));
+});
+const modifiedFields = computed(() => {
+  const fields = [
+    { key: 'date', label: 'Local Date', value: createDate.value },
+    { key: 'time', label: 'Local Time', value: createTime.value },
+    { key: 'timezone', label: 'Timezone Offset', value: offset.value },
+    { key: 'elevation', label: 'Elevation', value: elevation.value },
+    { key: 'latitude', label: 'Latitude', value: latitude.value },
+    { key: 'longitude', label: 'Longitude', value: longitude.value }
+  ];
+  return fields
+    .filter((field) => isModified(field.key, field.value))
+    .map((field) => ({
+      key: field.key,
+      label: field.label,
+      oldValue: String(originalValues.value[field.key] ?? ''),
+      newValue: String(field.value ?? '')
+    }));
+});
 
 const ensureValidCoordinates = () => {
   latitude.value = (latitude.value > 90) ? 90 : latitude.value;
@@ -215,13 +289,20 @@ const setFields = () => {
   createDate.value = props.metadata.date;
   createTime.value = props.metadata.time;
   offset.value = props.metadata.timezone;
+  originalValues.value = {
+    elevation: props.metadata.elevation,
+    longitude: props.metadata.longitude,
+    latitude: props.metadata.latitude,
+    date: props.metadata.date,
+    time: props.metadata.time,
+    timezone: props.metadata.timezone
+  };
   coordinatesUpdate();
 }
 
-const validateBeforeContinue = async (continueFunction, skipTimezone = false) => {
+const validateBeforeContinue = async (continueFunction) => {
   const result = await form.value.validate();
-  if (result.valid === true ||
-      skipTimezone && result.errors.length === 1 && result.errors[0].errorMessages[0].startsWith('Timezone')) {
+  if (result.valid) {
     continueFunction();
   }
   else {
@@ -253,6 +334,14 @@ const saveMetadata = () => {
     axios.put('/api/metadata', updatedData).then((newMetadata) => {
       saveComplete.value = true;
       photoListStore.updateItem(newMetadata.data);
+      originalValues.value = {
+        elevation: elevation.value,
+        longitude: longitude.value,
+        latitude: latitude.value,
+        date: createDate.value,
+        time: createTime.value,
+        timezone: offset.value
+      };
       setTimeout(() => { saveComplete.value = false; }, 3000);
       alertStore.alert.success({message: "Photo updated", timeout: 3000})
     }).catch(err => {
@@ -263,20 +352,28 @@ const saveMetadata = () => {
   });
 }
 
-const calculateTimezone = () => {
-  validateBeforeContinue(() => {
-    gettingTimezone.value = true;
-    const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
-    const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
-    axios.get(`/api/map/timezone?${coordinates}&${datetime}`).then(res => {
-      offset.value = res.data;
+const calculateTimezone = (quiet = false) => {
+  const isValidCoords = settingsStore.getRegex('number').test(latitude.value)
+    && settingsStore.getRegex('number').test(longitude.value);
+  const isValidDateValue = isValidDate(createDate.value);
+  const isValidTimeValue = settingsStore.getRegex('time').test(createTime.value);
+  if (!isValidCoords || !isValidDateValue || !isValidTimeValue) return;
+
+  gettingTimezone.value = true;
+  const coordinates = `lat=${encodeURI(latitude.value)}&lon=${encodeURI(longitude.value)}`;
+  const datetime = `date=${encodeURI(createDate.value)}&time=${encodeURI(createTime.value)}`;
+  axios.get(`/api/metadata/calculate-timezone?${coordinates}&${datetime}`).then(res => {
+    offset.value = res.data;
+    if (!quiet) {
       alertStore.alert.success({message: "Timezone calculated as "+res.data, timeout: 3000})
-    }).catch((err) => {
+    }
+  }).catch((err) => {
+    if (!quiet) {
       alertStore.alert.error(err.response.data);
-    }).finally(() => {
-      gettingTimezone.value = false;
-    });
-  }, true);
+    }
+  }).finally(() => {
+    gettingTimezone.value = false;
+  });
 }
 
 const isValidDate = (input) => {
@@ -327,9 +424,21 @@ const isValidTimezoneChar = (e) => {
 
 setFields();
 
+onMounted(async () => {
+  await nextTick();
+  if (autoTimezoneEnabled.value) {
+    calculateTimezone(true);
+  }
+});
+
 // Listen to metadata changes to load new values (when a new photo is selected)
 watch(() => props.metadata, () => {
   setFields();
+});
+
+watch([createDate, createTime, latitude, longitude], () => {
+  if (!autoTimezoneEnabled.value || !form.value) return;
+  calculateTimezone(true);
 });
 
 // Listen to coordinates store to update coordinates fields (i.e. from user clicking on the map)
@@ -343,6 +452,10 @@ coordinatesStore.$subscribe((mutation, state) => {
 optionsStore.$subscribe((mutation, state) => {
   tooltipEnabled.value = state.showTooltip;
   saveWarningEnabled.value = state.saveWarning;
+  autoTimezoneEnabled.value = state.autoTimezone;
+  if (autoTimezoneEnabled.value) {
+    calculateTimezone(true);
+  }
 });
 </script>
 
@@ -376,5 +489,13 @@ optionsStore.$subscribe((mutation, state) => {
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+}
+
+.modified-field :deep(.v-field) {
+  background-color: rgba(var(--v-theme-warning), 0.18);
+}
+
+.full-metadata-link {
+  cursor: pointer;
 }
 </style>

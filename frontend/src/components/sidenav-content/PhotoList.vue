@@ -1,17 +1,19 @@
 <template>
-<v-list density="compact" height="100%" v-model:selected="selection">
-  <v-list-subheader>
-    <span>Photo List ({{photoList.size}} item{{photoList.size == 1 ? '' : 's'}})</span>
-    <v-progress-circular 
-      v-if="loadingMetadata" 
-      indeterminate 
-      color="list-load" 
-      :size="15" 
-      :width="3" 
-      class="ml-2">
-    </v-progress-circular>
-  </v-list-subheader>
-  <batch-processing-launcher v-if="photoList.size > 0" :disabled="loadingMetadata"/>
+<v-list density="compact" height="100%" v-model:selected="selection" class="photo-list">
+  <div class="photo-list-header">
+    <v-list-subheader>
+      <span>Photo List ({{photoList.size}} item{{photoList.size == 1 ? '' : 's'}})</span>
+      <v-progress-circular 
+        v-if="loadingMetadata" 
+        indeterminate 
+        color="list-load" 
+        :size="15" 
+        :width="3" 
+        class="ml-2">
+      </v-progress-circular>
+    </v-list-subheader>
+    <batch-processing-launcher v-if="photoList.size > 0" :disabled="loadingMetadata"/>
+  </div>
   <v-list-item
     v-for="(photo, i) in photoList.values()"
     :key="photo.name"
@@ -87,6 +89,24 @@ const updateList = (directory) => {
 </script>
 
 <style scoped>
+.photo-list {
+  overflow-y: auto;
+  padding-top: 0;
+}
+
+.photo-list :deep(.v-list-subheader) {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.photo-list-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgb(var(--v-theme-surface));
+  padding-bottom: 4px;
+}
+
 .v-list-item__append > .v-icon {
   margin-inline-start: 0;
 }

@@ -5,6 +5,7 @@ export const useOptionsStore = defineStore('optionsStore', () => {
   const darkTheme = ref(false);
   const saveWarning = ref(true);
   const showTooltip = ref(true);
+  const autoTimezone = ref(false);
   
   const setDarkTheme = (theme) => {
     darkTheme.value = theme;
@@ -16,6 +17,10 @@ export const useOptionsStore = defineStore('optionsStore', () => {
   
   const setTooltip = (tooltip) => {
     showTooltip.value = tooltip;
+  }
+
+  const setAutoTimezone = (auto) => {
+    autoTimezone.value = auto;
   }
   
   const toggleDarkTheme = () => {
@@ -30,9 +35,14 @@ export const useOptionsStore = defineStore('optionsStore', () => {
     showTooltip.value = !showTooltip.value;
   }
 
+  const toggleAutoTimezone = () => {
+    autoTimezone.value = !autoTimezone.value;
+  }
+
   return { 
     darkTheme, setDarkTheme, toggleDarkTheme,
     saveWarning, setSaveWarning, toggleSaveWarning,
-    showTooltip, setTooltip, toggleTooltip
+    showTooltip, setTooltip, toggleTooltip,
+    autoTimezone, setAutoTimezone, toggleAutoTimezone
   };
 });

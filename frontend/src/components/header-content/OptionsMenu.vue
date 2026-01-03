@@ -69,11 +69,17 @@ const toggleTooltip = () => {
   optionsStore.toggleTooltip();
 }
 
+const toggleAutoTimezone = () => {
+  localStorage.setItem("photo-metadata-autotz", options.value.get('autoTimezone').state ? "false" : "true")
+  optionsStore.toggleAutoTimezone();
+}
+
 // Map for building options menu, <key, { display text, click function, default state }>
 const options = ref(new Map([
   ['theme', {label: "Dark mode", click: toggleTheme, state: true}],
   ['save', {label: "Show warning before saving a photo", click: toggleSaveWarning, state: true}],
   ['tooltip', {label: "Show clipboard/timezone search tooltips", click: toggleTooltip, state: true}],
+  ['autoTimezone', {label: "Auto-calculate timezone from coordinates", click: toggleAutoTimezone, state: false}],
 ]));
 
 // Set theme state from local storage
@@ -91,4 +97,9 @@ optionsStore.setSaveWarning(saveOption);
 const tooltipOption = localStorage.getItem("photo-metadata-tooltip") === "false" ? false : true;
 options.value.set('tooltip', {...options.value.get('tooltip'), state: tooltipOption});
 optionsStore.setTooltip(tooltipOption);
+
+// Set auto timezone state from local storage
+const autoTimezoneOption = localStorage.getItem("photo-metadata-autotz") === "false" ? false : true;
+options.value.set('autoTimezone', {...options.value.get('autoTimezone'), state: autoTimezoneOption});
+optionsStore.setAutoTimezone(autoTimezoneOption);
 </script>

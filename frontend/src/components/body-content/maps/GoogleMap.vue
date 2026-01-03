@@ -13,8 +13,7 @@ const theme = useTheme();
 const coordinatesStore = useCoordinatesStore();
 const optionsStore = useOptionsStore();
 
-const darkThemeOption = 'hybrid';
-const lightThemeOption = 'roadmap';
+const modeOption = 'roadmap';
 const defaultZoom = 10;
 
 var map;
@@ -36,16 +35,13 @@ document.head.appendChild(scriptTag);
 
 // Callback method for the bing maps API response, it initializes the map
 // Also adds a pushpin at the coordinates point, and registers the click event handler
-const initMap = () => {
-  const mode = theme.global.name.value === 'lightTheme' ? lightThemeOption : darkThemeOption;
-  const center = new google.maps.LatLng(coordinatesStore.coordinates.lat, coordinatesStore.coordinates.lon);
+const buildMap = (center, zoom, isDark) => {
+  const colorScheme = google.maps?.ColorScheme ? (isDark ? google.maps.ColorScheme.DARK : google.maps.ColorScheme.LIGHT) : null;
   map = new google.maps.Map(document.getElementById('map'), {
     center: center,
-    zoom: getZoom(center),
-    mapTypeId: mode,
-    mapTypeControlOptions: {
-      mapTypeIds: [lightThemeOption, darkThemeOption]
-    },
+    zoom: zoom,
+    mapTypeId: modeOption,
+    colorScheme: colorScheme || undefined,
     clickableIcons: false,
     fullscreenControl: false,
     streetViewControl: false,
@@ -55,7 +51,22 @@ const initMap = () => {
   });
   pushpin = new google.maps.Marker({ position: center, clickable: false, map: map });
   map.addListener("click", (click) => { coordinatesStore.update(click.latLng.lat(), click.latLng.lng()); });
+}
+
+const initMap = () => {
+  const isDark = theme.global.name.value !== 'lightTheme';
+  const center = new google.maps.LatLng(coordinatesStore.coordinates.lat, coordinatesStore.coordinates.lon);
+  buildMap(center, getZoom(center), isDark);
 };
+
+const applyTheme = (isDark) => {
+  if (!map) return;
+  const center = map.getCenter();
+  const zoom = map.getZoom();
+  google.maps.event.clearInstanceListeners(map);
+  pushpin.setMap(null);
+  buildMap(center, zoom, isDark);
+}
 
 // Get zoom level - default or zoomed out (if no coordinates)
 const getZoom = (center) => {
@@ -73,8 +84,7 @@ coordinatesStore.$subscribe((mutation, state) => {
 
 // Listen to options changes to detect changes in theme
 optionsStore.$subscribe((mutation, state)  => { 
-  if (!map) return;
-  map.setMapTypeId(state.darkTheme ? darkThemeOption : lightThemeOption);
+  applyTheme(state.darkTheme);
 });
 </script>
 
